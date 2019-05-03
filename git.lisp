@@ -279,6 +279,10 @@
               result))
       )))
 
+(defun sp-ob (ob-string)
+  (partition #\null
+             ob-string))
+
 (defun split-object (object-data)
   (destructuring-bind (head tail)
       (partition 0
