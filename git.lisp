@@ -1,10 +1,20 @@
-(defpackage :fwoar.cl-git
-  (:use :cl )
-  (:export ))
 (in-package :fwoar.cl-git)
+
+(defparameter *object-data-lens*
+  (data-lens.lenses:make-alist-lens :object-data))
+
+(defclass pack ()
+  ((%pack :initarg :pack :reader pack-file)
+   (%index :initarg :index :reader index-file)))
 
 (defclass repository ()
   ((%root :initarg :root :reader root)))
+
+(defclass git-object ()
+  ())
+
+(defclass commit (git-object)
+  ())
 
 (defun repository (root)
   (fw.lu:new 'repository root))
@@ -20,10 +30,6 @@
 (defun loose-object-path (sha)
   (let ((obj-path (fwoar.string-utils:insert-at 2 #\/ sha)))
     (merge-pathnames obj-path ".git/objects/")))
-
-(defclass pack ()
-  ((%pack :initarg :pack :reader pack-file)
-   (%index :initarg :index :reader index-file)))
 
 (defun pack (index pack)
   (fw.lu:new 'pack index pack))
@@ -47,9 +53,10 @@
 (defun edges-in-fanout (toc s sha)
   (let* ((fanout-offset (getf toc :fanout)))
     (file-position s (+ fanout-offset (* 4 (1- (elt sha 0)))))
-    (destructuring-bind ((_ . cur) (__ . next)) (fwoar.bin-parser:extract '((cur 4 fwoar.bin-parser:be->int)
-                                                                            (next 4 fwoar.bin-parser:be->int))
-                                                                          s)
+    (destructuring-bind ((_ . cur) (__ . next))
+        (fwoar.bin-parser:extract '((cur 4 fwoar.bin-parser:be->int)
+                                    (next 4 fwoar.bin-parser:be->int))
+                                  s)
       (declare (ignore _ __))
       (values cur next))))
 
@@ -67,7 +74,8 @@
               (t mid))))))
 
 (defun find-pack-containing (pack-file id)
-  (with-open-file (s (index-file pack-file) :element-type '(unsigned-byte 8))
+  (with-open-file (s (index-file pack-file)
+                     :element-type '(unsigned-byte 8))
     (let ((binary-sha (ironclad:hex-string-to-byte-array id))
           (toc (idx-toc s)))
       (multiple-value-bind (_ end) (edges-in-fanout toc s binary-sha)
@@ -87,6 +95,19 @@
           (file-position p object-offset-in-pack)
           (read-object-from-pack p))))))
 
+(defun seek-to-object-in-pack (idx-stream pack-stream obj-number)
+  (let* ((toc (idx-toc idx-stream))
+         (offset-offset (getf toc :4-byte-offsets)))
+    (file-position idx-stream (+ offset-offset (* 4 obj-number)))
+    (let ((object-offset-in-pack (read-bytes 4 'fwoar.bin-parser:be->int idx-stream)))
+      (file-position pack-stream object-offset-in-pack))))
+
+(defun extract-object-metadata-from-pack (pack obj-number)
+  (with-open-file (s (index-file pack) :element-type '(unsigned-byte 8))
+    (with-open-file (p (pack-file pack) :element-type '(unsigned-byte 8))
+      (seek-to-object-in-pack s p obj-number)
+      (read-object-metadata-from-pack p))))
+
 (defun extract-loose-object (repo id)
   (with-open-file (s (object repo id)
                      :element-type '(unsigned-byte 8))
@@ -100,8 +121,6 @@
                              (multiple-value-call 'extract-object-from-pack 
                                (find-object-in-pack-files (root repo) id)))))
 
-(defparameter *object-data-lens*
-  (data-lens.lenses:make-alist-lens :object-data))
 
 (defun turn-read-object-to-string (object)
   (data-lens.lenses:over *object-data-lens* 'babel:octets-to-string object))
@@ -133,13 +152,6 @@
            'fanout-table)
           'vector))
 
-(defun batch-4 (bytes)
-  (mapcar 'fwoar.bin-parser:be->int
-          (serapeum:batches bytes 4)))
-
-(defun batch-20 (bytes)
-  (serapeum:batches bytes 20))
-
 (defun get-object-size (bytes)
   (let ((first (elt bytes 0))
         (rest (subseq bytes 1)))
@@ -150,10 +162,6 @@
   (let ((first (elt bytes 0)))
     (ldb (byte 3 4)
          first)))
-
-(serapeum:defalias ->sha-string
-  (<>1 (data-lens:over 'fwoar.bin-parser:byte-array-to-hex-string)
-       batch-20))
 
 (defun get-shas-before (fanout-table first-sha-byte s)
   (let ((num-before (elt fanout-table first-sha-byte))
@@ -174,11 +182,6 @@
                         4)))
   (fwoar.bin-parser:extract '((offset 4 fwoar.bin-parser:be->int))
                             s))
-
-(defmacro sym->plist (&rest syms)
-  `(list ,@(loop for sym in syms
-                 append (list (alexandria:make-keyword sym)
-                              sym))))
 
 (defun idx-toc (idx-stream)
   (let* ((object-count (progn (file-position idx-stream 1028)
@@ -224,6 +227,7 @@
         (crc-idx (getf idx-toc :packed-crcs))
         (4-byte-offsets-idx (getf idx-toc :4-byte-offsets))
         (8-byte-offsets-idx (getf idx-toc :8-byte-offsets)))
+    (declare (ignore 8-byte-offsets-idx))
     (values num
             (progn
               (file-position s (+ sha-idx (* num 20)))
@@ -275,38 +279,6 @@
               result))
       )))
 
-(defmacro inspect- (s form)
-  `(let ((result ,form))
-     (format ,s "~&~s (~{~s~^ ~})~%~4t~s~%"
-             ',form
-             ,(typecase form
-                (list `(list ',(car form) ,@(cdr form)))
-                (t `(list ,form)))
-             result)
-     result))
-
-(defun inspect-* (fn)
-  (lambda (&rest args)
-    (declare (dynamic-extent args))
-    (inspect- *trace-output*
-              (apply fn args))))
-
-(defun partition (char string &key from-end)
-  (let ((pos (position char string :from-end from-end)))
-    (if pos
-	      (list (subseq string 0 pos)
-	            (subseq string (1+ pos)))
-	      (list string
-	            nil))))
-
-(defun partition-subseq (subseq string &key from-end)
-  (let ((pos (search subseq string :from-end from-end)))
-    (if pos
-	      (list (subseq string 0 pos)
-	            (subseq string (+ (length subseq) pos)))
-	      (list string
-	            nil))))
-
 (defun split-object (object-data)
   (destructuring-bind (head tail)
       (partition 0
@@ -318,10 +290,6 @@
               (list type
                     (parse-integer length))))))
 
-(defclass git-object ()
-  ())
-(defclass commit (git-object)
-  ())
 
 (defun parse-commit (commit)
   (destructuring-bind (metadata message)
@@ -329,65 +297,3 @@
                         commit #+(or)(babel:octets-to-string commit :encoding :latin1))
     (values message
             (fwoar.string-utils:split #\newline metadata))))
-
-(defclass git-graph ()
-  ((%repo :initarg :repo :reader repo)
-   (%depth :initarg :depth :reader depth)
-   (%branches :reader branches)
-   (%node-cache :reader node-cache :initform (make-hash-table :test 'equal))
-   (%edge-cache :reader edge-cache :initform (make-hash-table :test 'equal))))
-
-(defmethod initialize-instance :after ((object git-graph) &key)
-  (setf (slot-value object '%branches)
-        (fw.lu:alist-string-hash-table
-         (funcall (data-lens:over
-                   (<>1 (data-lens:applying #'cons)
-                        (data-lens:transform-head
-                         (serapeum:op (subseq _1 0 (min (length _1) 7))))
-                        #'reverse))
-                  (branches (repo object))))))
-
-(defun git-graph (repo)
-  (fw.lu:new 'git-graph repo))
-
-(defun get-commit-parents (repository commit)
-  (map 'list 
-       (serapeum:op (second (partition #\space _)))
-       (remove-if-not (lambda (it)
-                        (serapeum:string-prefix-p "parent" it))
-                      (nth-value 1 (parse-commit
-                                    (split-object
-                                     (chipz:decompress nil (chipz:make-dstate 'chipz:zlib)
-                                                       (object repository
-                                                               commit))))))))
-
-(defmethod cl-dot:graph-object-node ((graph git-graph) (commit string))
-  (alexandria:ensure-gethash commit
-                             (node-cache graph)
-                             (make-instance 'cl-dot:node
-                                            :attributes `(:label ,(gethash #1=(subseq commit 0 7)
-                                                                           (branches graph)
-                                                                           #1#)))))
-
-(defmethod cl-dot:graph-object-points-to ((graph git-graph) (commit string))
-  (mapcar (lambda (c)
-            (setf (gethash (list commit c)
-                           (edge-cache graph))
-                  t)
-            c)
-          (remove-if (lambda (it)
-                       (gethash (list commit it)
-                                (edge-cache graph)))
-                     (mapcar (serapeum:op (subseq _ 0 7))
-                             (get-commit-parents (repo graph) commit)
-                             #+nil
-                             (loop
-                               for cur = (list commit) then parents
-                               for parents = (let ((f (get-commit-parents (repo graph) (car cur))))
-                                               f)
-                               until (or (not parents)
-                                         (cdr parents))
-                               finally (return (or parents
-                                                   (when (not (equal commit (car cur)))
-                                                     cur))))))))
-

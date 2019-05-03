@@ -7,12 +7,16 @@
   :license "MIT"
   :pathname #-fw.dev nil #+fw.dev #p"PROJECTS:cl-git;"
   :depends-on (:alexandria
-               :split-sequence
-               :cl-dot
                :chipz
+               :cl-dot
                :data-lens
                :fwoar-lisputils
                :fwoar-lisputils/bin-parser
+               :ironclad
                :serapeum
+               :split-sequence
                :uiop)
-  :components ((:file "cl-git")))
+  :components ((:file "package")
+               (:file "util" :depends-on ("package"))
+               (:file "git" :depends-on ("package" "util"))
+               (:file "porcelain" :depends-on ("package" "git"))))
