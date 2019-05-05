@@ -47,3 +47,31 @@
 (serapeum:defalias ->sha-string
   (data-lens:<>1 (data-lens:over 'fwoar.bin-parser:byte-array-to-hex-string)
                  'batch-20))
+
+(defun read-bytes (count format stream)
+  (let ((seq (make-array count)))
+    (read-sequence seq stream)
+    (funcall format
+             seq)))
+
+(defun sp-ob (ob-string)
+  (partition #\null
+             ob-string))
+
+(defun split-object (object-data)
+  (destructuring-bind (head tail)
+      (partition 0
+                 object-data)
+    (destructuring-bind (type length)
+        (partition #\space
+                   (babel:octets-to-string head :encoding :latin1))
+      (values tail
+              (list type
+                    (parse-integer length))))))
+
+(defun parse-commit (commit)
+  (destructuring-bind (metadata message)
+      (partition-subseq #(#\newline #\newline)
+                        commit #+(or)(babel:octets-to-string commit :encoding :latin1))
+    (values message
+            (fwoar.string-utils:split #\newline metadata))))

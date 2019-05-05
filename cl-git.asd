@@ -18,5 +18,6 @@
                :uiop)
   :components ((:file "package")
                (:file "util" :depends-on ("package"))
-               (:file "git" :depends-on ("package" "util"))
+               (:file "model" :depends-on ("package"))
+               (:file "git" :depends-on ("package" "util" "model"))
                (:file "porcelain" :depends-on ("package" "git"))))

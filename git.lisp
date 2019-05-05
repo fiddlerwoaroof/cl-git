@@ -1,48 +1,5 @@
 (in-package :fwoar.cl-git)
 
-(defparameter *object-data-lens*
-  (data-lens.lenses:make-alist-lens :object-data))
-
-(defclass pack ()
-  ((%pack :initarg :pack :reader pack-file)
-   (%index :initarg :index :reader index-file)))
-
-(defclass repository ()
-  ((%root :initarg :root :reader root)))
-
-(defclass git-object ()
-  ())
-
-(defclass commit (git-object)
-  ())
-
-(defun repository (root)
-  (fw.lu:new 'repository root))
-
-(defun get-local-branches (root)
-  (mapcar (data-lens:juxt #'pathname-name
-                          (alexandria:compose #'serapeum:trim-whitespace
-                                              #'alexandria:read-file-into-string))
-          (uiop:directory*
-           (merge-pathnames ".git/refs/heads/*"
-                            root))))
-
-(defun loose-object-path (sha)
-  (let ((obj-path (fwoar.string-utils:insert-at 2 #\/ sha)))
-    (merge-pathnames obj-path ".git/objects/")))
-
-(defun pack (index pack)
-  (fw.lu:new 'pack index pack))
-
-(defun pack-files (repo)
-  (mapcar 'pack
-          (uiop:directory*
-           (merge-pathnames ".git/objects/pack/*.idx"
-                            repo))
-          (uiop:directory*
-           (merge-pathnames ".git/objects/pack/*.pack"
-                            repo))))
-
 (defun find-object-in-pack-files (repo id)
   (dolist (pack-file (pack-files repo))
     (multiple-value-bind (pack mid) (find-pack-containing pack-file id)
@@ -216,12 +173,6 @@
                         idx-sha)
             object-count)))
 
-(defun read-bytes (count format stream)
-  (let ((seq (make-array count)))
-    (read-sequence seq stream)
-    (funcall format
-             seq)))
-
 (defun collect-data (idx-toc s num)
   (let ((sha-idx (getf idx-toc :shas))
         (crc-idx (getf idx-toc :packed-crcs))
@@ -238,15 +189,6 @@
             (progn
               (file-position s (+ 4-byte-offsets-idx (* num 4)))
               (read-bytes 4 'fwoar.bin-parser:be->int s)))))
-
-(defun object-type->sym (object-type)
-  (ecase object-type
-    (1 :commit)
-    (2 :tree)
-    (3 :blob)
-    (4 :tag)
-    (6 :ofs-delta)
-    (7 :ref-delta)))
 
 (defun read-object-metadata-from-pack (s)
   (let* ((metadata (fwoar.bin-parser:extract-high s))
@@ -276,28 +218,5 @@
                 ,@(multiple-value-list
                    (read-object-metadata-from-pack pack))
                 (:offset . ,offset))
-              result))
-      )))
+              result)))))
 
-(defun sp-ob (ob-string)
-  (partition #\null
-             ob-string))
-
-(defun split-object (object-data)
-  (destructuring-bind (head tail)
-      (partition 0
-                 object-data)
-    (destructuring-bind (type length)
-        (partition #\space
-                   (babel:octets-to-string head :encoding :latin1))
-      (values tail
-              (list type
-                    (parse-integer length))))))
-
-
-(defun parse-commit (commit)
-  (destructuring-bind (metadata message)
-      (partition-subseq #(#\newline #\newline)
-                        commit #+(or)(babel:octets-to-string commit :encoding :latin1))
-    (values message
-            (fwoar.string-utils:split #\newline metadata))))

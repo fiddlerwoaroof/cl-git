@@ -6,3 +6,7 @@
 
 (defpackage :cl-git-user
   (:use :cl :fwoar.cl-git))
+
+(defpackage :git
+  (:use)
+  (:export #:show #:branch))
