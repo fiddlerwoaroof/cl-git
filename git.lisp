@@ -131,16 +131,6 @@
     (values (cons :type (object-type->sym type))
             (cons :decompressed-size size))))
 
-(defun read-object-from-pack (s)
-  (let* ((metadata (fwoar.bin-parser:extract-high s))
-         (type (get-object-type metadata))
-         (size (get-object-size metadata))
-         (object-data (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
-    (list (cons :type (object-type->sym type))
-          (cons :decompressed-size size)
-          (cons :object-data object-data)
-          (cons :raw-data object-data))))
-
 (defun get-first-commits-from-pack (idx pack n)
   (let ((toc (idx-toc idx))
         (result ()))

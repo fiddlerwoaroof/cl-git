@@ -42,6 +42,16 @@
         (return-from find-object-in-pack-files
           (values pack mid))))))
 
+(defun read-object-from-pack (s)
+  (let* ((metadata (fwoar.bin-parser:extract-high s))
+         (type (get-object-type metadata))
+         (size (get-object-size metadata))
+         (object-data (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
+    (list (cons :type (object-type->sym type))
+          (cons :decompressed-size size)
+          (cons :object-data object-data)
+          (cons :raw-data object-data))))
+
 (defun extract-object-from-pack (pack obj-number)
   (with-open-file (s (index-file pack) :element-type '(unsigned-byte 8))
     (with-open-file (p (pack-file pack) :element-type '(unsigned-byte 8))
