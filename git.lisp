@@ -16,17 +16,6 @@
 (defun turn-read-object-to-string (object)
   (data-lens.lenses:over *object-data-lens* 'babel:octets-to-string object))
 
-(defgeneric branches (repository)
-  (:method ((repository repository))
-    (get-local-branches (root repository))))
-
-(defgeneric branch (repository name)
-  (:method ((repository repository) name)
-    (second
-     (find name (get-local-branches (root repository))
-           :test 'equal
-           :key 'car))))
-
 (defgeneric object (repository id)
   (:method ((repository repository) id)
     (car
