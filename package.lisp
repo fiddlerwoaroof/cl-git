@@ -9,4 +9,4 @@
 
 (defpackage :git
   (:use)
-  (:export #:show #:branch))
+  (:export #:show #:branch #:branches #:commit-parents #:in-repository))
