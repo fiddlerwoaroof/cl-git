@@ -31,25 +31,25 @@
 (defun partition (char string &key from-end)
   (let ((pos (position char string :from-end from-end)))
     (if pos
-	      (list (subseq string 0 pos)
-	            (subseq string (1+ pos)))
-	      (list string
-	            nil))))
+        (list (subseq string 0 pos)
+              (subseq string (1+ pos)))
+      (list string
+            nil))))
 
 (defun partition-subseq (subseq string &key from-end)
   (let ((pos (search subseq string :from-end from-end)))
     (if pos
-	      (list (subseq string 0 pos)
-	            (subseq string (+ (length subseq) pos)))
-	      (list string
-	            nil))))
+        (list (subseq string 0 pos)
+              (subseq string (+ (length subseq) pos)))
+      (list string
+            nil))))
 
 (serapeum:defalias ->sha-string
   (data-lens:<>1 (data-lens:over 'fwoar.bin-parser:byte-array-to-hex-string)
                  'batch-20))
 
 (defun read-bytes (count format stream)
-  (let ((seq (make-array count)))
+  (let ((seq (make-array count :element-type 'serapeum:octet)))
     (read-sequence seq stream)
     (funcall format
              seq)))
@@ -74,4 +74,5 @@
       (partition-subseq #(#\newline #\newline)
                         commit #+(or)(babel:octets-to-string commit :encoding :latin1))
     (values message
-            (fwoar.string-utils:split #\newline metadata))))
+            (map 'vector (serapeum:op (partition #\space _))
+                 (fwoar.string-utils:split #\newline metadata)))))

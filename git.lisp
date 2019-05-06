@@ -68,8 +68,9 @@
 (defun extract-loose-object (repo id)
   (with-open-file (s (object repo id)
                      :element-type '(unsigned-byte 8))
-    (chipz:decompress nil (chipz:make-dstate 'chipz:zlib)
-                      s)))
+    (alexandria:when-let ((result (chipz:decompress nil (chipz:make-dstate 'chipz:zlib)
+                                                    s)))
+      (babel:octets-to-string result))))
 
 (defun extract-object (repo id)
   (if (object repo id)
