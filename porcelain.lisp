@@ -9,6 +9,9 @@
   (setf *git-repository*
         (truename root)))
 
+(defun git:show-repository ()
+  *git-repository*)
+
 (defun git:show (object)
   (babel:octets-to-string
    (extract-object (repository *git-repository*)
