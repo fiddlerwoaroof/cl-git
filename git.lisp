@@ -70,7 +70,8 @@
                      :element-type '(unsigned-byte 8))
     (alexandria:when-let ((result (chipz:decompress nil (chipz:make-dstate 'chipz:zlib)
                                                     s)))
-      (babel:octets-to-string result))))
+      (elt (partition 0 result)
+           1))))
 
 (defun extract-object (repo id)
   (if (object repo id)
