@@ -115,9 +115,10 @@
 
 (defun read-object-metadata-from-pack (s)
   (let* ((metadata (fwoar.bin-parser:extract-high s))
-         (type (get-object-type metadata))
-         (size (get-object-size metadata)))
-    (values (cons :type (object-type->sym type))
+         (type-raw (get-object-type metadata))
+         (size (get-object-size metadata))
+         (type (object-type->sym type-raw)))
+    (values (cons :type type)
             (cons :decompressed-size size))))
 
 (defun get-first-commits-from-pack (idx pack n)

@@ -42,11 +42,18 @@
         (return-from find-object-in-pack-files
           (values pack mid))))))
 
+(defgeneric extract-object-of-type (type s)
+  (:method ((type integer) s)
+    (extract-object-of-type (object-type->sym type)
+                            s))
+  (:method ((type (eql :commit)) (s stream))
+    (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
+
 (defun read-object-from-pack (s)
   (let* ((metadata (fwoar.bin-parser:extract-high s))
          (type (get-object-type metadata))
          (size (get-object-size metadata))
-         (object-data (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
+         (object-data (extract-object-of-type type s)))
     (list (cons :type (object-type->sym type))
           (cons :decompressed-size size)
           (cons :object-data object-data)
