@@ -12,13 +12,34 @@
 (defun git:show-repository ()
   *git-repository*)
 
+(defmacro git:git (&rest commands)
+  `(uiop:nest ,@(reverse
+                 (mapcar (serapeum:op (case (car _1)
+                                        ((<<=) (list* 'mapcan
+                                                      (list 'quote
+                                                            (intern (symbol-name (cadadr _1))
+                                                                    :git))
+                                                      (cddr _1)))
+                                        ((map) (list* 'mapcar
+                                                      (list 'quote
+                                                            (intern (symbol-name (cadadr _1))
+                                                                    :git))
+                                                      (cddr _1)))
+                                        (t (cons (intern (symbol-name (car _1))
+                                                         :git)
+                                                 (cdr _1)))))
+                         commands))))
+
 (defun git:show (object)
   (babel:octets-to-string
-   (extract-object (repository *git-repository*)
-                   object)
+   (coerce (extract-object (repository *git-repository*)
+                           object)
+           '(vector serapeum:octet))
    :encoding *git-encoding*))
 
 (defun git:branch (&optional (branch "master"))
+  #+lispworks
+  (declare (notinline serapeum:assocadr))
   (let ((branches (branches (repository *git-repository*))))
     (nth-value 0 (serapeum:assocadr branch branches
                                     :test 'equal))))

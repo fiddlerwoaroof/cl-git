@@ -42,18 +42,55 @@
         (return-from find-object-in-pack-files
           (values pack mid))))))
 
-(defgeneric extract-object-of-type (type s)
-  (:method ((type integer) s)
-    (extract-object-of-type (object-type->sym type)
-                            s))
-  (:method ((type (eql :commit)) (s stream))
-    (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
+(defun behead (data)
+  (elt (partition 0 data)
+       1))
 
-(defun read-object-from-pack (s)
+(defun tree-entry (data)
+  (values-list (partition 0 data :with-offset 20)))
+
+(defun format-tree-entry (entry)
+  (destructuring-bind (info sha) (partition 0 entry)
+    (concatenate 'vector
+                 (apply #'concatenate 'vector
+                        (serapeum:intersperse (vector (char-code #\tab))
+                                              (reverse
+                                               (partition (char-code #\space)
+                                                          info))))
+                 (list (char-code #\tab))
+                 (babel:string-to-octets (elt (->sha-string sha) 0) :encoding *git-encoding*))))
+
+(defun tree-entries (data &optional accum)
+  (if (<= (length data) 0)
+      (apply #'concatenate 'vector
+             (serapeum:intersperse (vector (char-code #\newline))
+                                   (nreverse accum)))
+      (multiple-value-bind (next rest) (tree-entry data) 
+        (tree-entries rest
+                      (list* (format-tree-entry next)
+                             accum)))))
+
+(defgeneric extract-object-of-type (type s repository)
+  (:method ((type integer) s repository)
+    (extract-object-of-type (object-type->sym type)
+                            s
+                            repository))
+
+  (:method ((type (eql :commit)) (s stream) repository)
+    (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s))
+
+  (:method ((type (eql :blob)) (s stream) repository)
+    (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s))
+
+  (:method ((type (eql :tree)) (s stream) repository)
+    (let* ((data (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
+      (tree-entries data))))
+
+(defun read-object-from-pack (s repository)
   (let* ((metadata (fwoar.bin-parser:extract-high s))
          (type (get-object-type metadata))
          (size (get-object-size metadata))
-         (object-data (extract-object-of-type type s)))
+         (object-data (extract-object-of-type type s repository)))
     (list (cons :type (object-type->sym type))
           (cons :decompressed-size size)
           (cons :object-data object-data)
@@ -67,7 +104,7 @@
         (file-position s (+ offset-offset (* 4 obj-number)))
         (let ((object-offset-in-pack (read-bytes 4 'fwoar.bin-parser:be->int s)))
           (file-position p object-offset-in-pack)
-          (read-object-from-pack p))))))
+          (read-object-from-pack p (repository pack)))))))
 
 (defun extract-loose-object (repo id)
   (with-open-file (s (object repo id)

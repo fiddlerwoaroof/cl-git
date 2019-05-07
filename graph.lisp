@@ -21,6 +21,8 @@
   (fw.lu:new 'git-graph repo))
 
 (defun get-commit-parents (repository commit)
+  #+lispworks
+  (declare (notinline mismatch serapeum:string-prefix-p))
   (map 'list 
        (serapeum:op (second (partition #\space _)))
        (remove-if-not (lambda (it)

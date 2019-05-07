@@ -5,7 +5,8 @@
 
 (defclass pack ()
   ((%pack :initarg :pack :reader pack-file)
-   (%index :initarg :index :reader index-file)))
+   (%index :initarg :index :reader index-file)
+   (%repository :initarg :repository :reader repository)))
 
 (defclass repository ()
   ((%root :initarg :root :reader root)))
@@ -25,8 +26,11 @@
     (6 :ofs-delta)
     (7 :ref-delta)))
 
-(defun repository (root)
-  (fw.lu:new 'repository root))
+(defgeneric repository (root)
+  (:method ((root string))
+   (fw.lu:new 'repository root))
+  (:method ((root pathname))
+   (fw.lu:new 'repository root)))
 
 (defun get-local-branches (root)
   (append (get-local-unpacked-branches root)
@@ -36,11 +40,12 @@
   (let ((obj-path (fwoar.string-utils:insert-at 2 #\/ sha)))
     (merge-pathnames obj-path ".git/objects/")))
 
-(defun pack (index pack)
-  (fw.lu:new 'pack index pack))
+(defun pack (index pack repository)
+  (fw.lu:new 'pack index pack repository))
 
 (defun pack-files (repo)
-  (mapcar 'pack
+  (mapcar (serapeum:op
+            (pack _ _ (repository repo)))
           (uiop:directory*
            (merge-pathnames ".git/objects/pack/*.idx"
                             repo))

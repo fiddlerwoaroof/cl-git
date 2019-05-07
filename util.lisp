@@ -28,11 +28,14 @@
     (inspect- *trace-output*
               (apply fn args))))
 
-(defun partition (char string &key from-end)
+(defun partition (char string &key from-end (with-offset nil wo-p))
   (let ((pos (position char string :from-end from-end)))
     (if pos
-        (list (subseq string 0 pos)
-              (subseq string (1+ pos)))
+        (if wo-p 
+            (list (subseq string 0 (+ pos with-offset 1))
+                  (subseq string (+ pos 1 with-offset)))
+            (list (subseq string 0 pos)
+                  (subseq string (1+ pos))))
       (list string
             nil))))
 
