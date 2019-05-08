@@ -21,10 +21,7 @@
                                                                     :git))
                                                       (cddr _1)))
                                         ((map) (list* 'mapcar
-                                                      (list 'quote
-                                                            (intern (symbol-name (cadadr _1))
-                                                                    :git))
-                                                      (cddr _1)))
+                                                      (cdr _1)))
                                         (t (cons (intern (symbol-name (car _1))
                                                          :git)
                                                  (cdr _1)))))
@@ -36,6 +33,31 @@
                            object)
            '(vector serapeum:octet))
    :encoding *git-encoding*))
+
+(defun git:contents (object)
+  (git:show object))
+
+(defstruct (tree-entry (:type vector))
+  te-name te-mode te-id)
+
+(defun git:tree (commit)
+  (cadr (fw.lu:v-assoc "tree"
+                       (nth-value 1 (parse-commit commit))
+                       :test 'equal)))
+
+(defun git::filter-tree (name-pattern tree)
+  #+lispworks
+  (declare (notinline serapeum:string-prefix-p))
+  (let* ((lines (fwoar.string-utils:split #\newline tree))
+         (columns (map 'list
+                       (serapeum:op
+                         (coerce (fwoar.string-utils:split #\tab _)
+                                 'simple-vector))
+                       lines)))
+    (remove-if-not (serapeum:op
+                     (serapeum:string-prefix-p name-pattern _))
+                   columns
+                   :key #'tree-entry-te-name)))
 
 (defun git:branch (&optional (branch "master"))
   #+lispworks
