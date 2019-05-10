@@ -45,10 +45,10 @@
 
 (defun pack-files (repo)
   (mapcar (serapeum:op
-            (pack _ _ (repository repo)))
+            (pack _1
+                  (merge-pathnames
+                   (make-pathname :type "pack") _1)
+                  (repository repo)))
           (uiop:directory*
            (merge-pathnames ".git/objects/pack/*.idx"
-                            repo))
-          (uiop:directory*
-           (merge-pathnames ".git/objects/pack/*.pack"
                             repo))))
