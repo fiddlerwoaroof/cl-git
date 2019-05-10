@@ -82,6 +82,9 @@
   (:method ((type (eql :blob)) (s stream) repository)
     (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s))
 
+  (:method ((type (eql :tag)) (s stream) repository)
+    (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s))
+
   (:method ((type (eql :tree)) (s stream) repository)
     (let* ((data (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
       (tree-entries data))))
