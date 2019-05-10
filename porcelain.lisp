@@ -20,8 +20,9 @@
                                                             (intern (symbol-name (cadadr _1))
                                                                     :git))
                                                       (cddr _1)))
-                                        ((map) (list* 'mapcar
-                                                      (cdr _1)))
+                                        ((map) (list* 'mapcar (cdr _1)))
+                                        ((unwrap) `(uiop:nest (car)
+                                                              (mapcar ,@(cdr _1))))
                                         (t (cons (intern (symbol-name (car _1))
                                                          :git)
                                                  (cdr _1)))))
