@@ -19,5 +19,7 @@
   :components ((:file "package")
                (:file "util" :depends-on ("package"))
                (:file "model" :depends-on ("package"))
-               (:file "git" :depends-on ("package" "util" "model"))
+               (:file "extract" :depends-on ("package"))
+               (:file "branch" :depends-on ("package" "extract"))
+               (:file "git" :depends-on ("package" "util" "model" "branch"))
                (:file "porcelain" :depends-on ("package" "git"))))
