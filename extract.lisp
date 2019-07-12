@@ -115,9 +115,28 @@
           (file-position p object-offset-in-pack)
           (read-object-from-pack p (repository pack)))))))
 
-(defun extract-loose-object (repo id)
-  (with-open-file (s (loose-object repo id)
-                     :element-type '(unsigned-byte 8))
+(defclass git-object ()
+  ((%repo :initarg :repo :reader object-repo)
+   (%hash :initarg :hash :reader object-hash)))
+(defclass loose-object (git-object)
+  ((%file :initarg :file :reader loose-object-file)))
+(defclass packed-object (git-object)
+  ((%pack :initarg :pack :reader packed-object-pack)
+   (%offset :initarg :offset :reader packed-object-offset)))
+
+(defun object (repo id)
+  (let ((repo-root (typecase repo
+                     (repository (root repo))
+                     (string (namestring
+                              (truename repo))))))
+    (or (alexandria:when-let ((object-file (loose-object repo id)))
+          (make-instance 'loose-object :repo repo-root :hash id :file object-file))
+        (multiple-value-bind (pack offset) (find-object-in-pack-files repo id)
+          (when pack
+            (make-instance 'packed-object :repo repo-root :offset offset :pack pack))))))
+
+(defun extract-loose-object (repo file)
+  (with-open-file (s file :element-type '(unsigned-byte 8))
     (alexandria:when-let ((result (chipz:decompress nil (chipz:make-dstate 'chipz:zlib)
                                                     s)))
       (destructuring-bind (type rest)
@@ -127,9 +146,18 @@
                                      1)
                                 repo)))))
 
+(defgeneric extract-object-next (object)
+  (:method ((object loose-object))
+    (extract-loose-object (object-repo object)
+                          (loose-object-file object)))
+  (:method ((object packed-object))
+    (data-lens.lenses:view *object-data-lens*
+                           (extract-object-from-pack (packed-object-pack object)
+                                                     (packed-object-offset object)))))
+
 (defun extract-object (repo id)
   (if (loose-object-p repo id)
-      (extract-loose-object repo id)
+      (extract-loose-object repo (loose-object repo id))
       (data-lens.lenses:view *object-data-lens*
                              (multiple-value-call 'extract-object-from-pack 
                                (find-object-in-pack-files (root repo) id)))))

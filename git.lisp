@@ -7,14 +7,25 @@
     (let ((object-offset-in-pack (read-bytes 4 'fwoar.bin-parser:be->int idx-stream)))
       (file-position pack-stream object-offset-in-pack))))
 
+(deftype octet ()
+  '(unsigned-byte 8))
+
+(defmacro with-open-files* ((&rest bindings) &body body)
+  `(uiop:nest ,@(mapcar (serapeum:op
+                          `(with-open-file ,_1))
+                        bindings)
+              (progn
+                ,@body)))
+
 (defun extract-object-metadata-from-pack (pack obj-number)
-  (with-open-file (s (index-file pack) :element-type '(unsigned-byte 8))
-    (with-open-file (p (pack-file pack) :element-type '(unsigned-byte 8))
-      (seek-to-object-in-pack s p obj-number)
-      (read-object-metadata-from-pack p))))
+  (with-open-files* ((s (index-file pack) :element-type 'octet)
+                     (p (pack-file pack) :element-type 'octet))
+    (seek-to-object-in-pack s p obj-number)
+    (read-object-metadata-from-pack p)))
 
 (defun turn-read-object-to-string (object)
-  (data-lens.lenses:over *object-data-lens* 'babel:octets-to-string object))
+  (data-lens.lenses:over *object-data-lens*
+                         'babel:octets-to-string object))
 
 (defgeneric loose-object (repository id)
   (:method ((repository string) id)
