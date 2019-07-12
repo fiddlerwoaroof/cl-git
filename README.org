@@ -13,8 +13,8 @@
 ** Installation
    
    #+BEGIN_SRC sh
-     git clone https://github.com/fiddlerwoaroof/cl-git.git "$HOME/quicklisp/local-projects/cl-git"
-     sbcl --load "$HOME/quicklisp/setup.lisp"
+     % git clone https://github.com/fiddlerwoaroof/cl-git.git "$HOME/quicklisp/local-projects/cl-git"
+     % sbcl --load "$HOME/quicklisp/setup.lisp"
      CL-USER> (ql:quickload :cl-git)
    #+END_SRC
 
