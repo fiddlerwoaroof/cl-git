@@ -14,18 +14,19 @@
 
 (defmacro git:git (&rest commands)
   `(uiop:nest ,@(reverse
-                 (mapcar (serapeum:op (case (car _1)
-                                        ((<<=) (list* 'mapcan
-                                                      (list 'quote
-                                                            (intern (symbol-name (cadadr _1))
-                                                                    :git))
-                                                      (cddr _1)))
-                                        ((map) (list* 'mapcar (cdr _1)))
-                                        ((unwrap) `(uiop:nest (car)
-                                                              (mapcar ,@(cdr _1))))
-                                        (t (cons (intern (symbol-name (car _1))
-                                                         :git)
-                                                 (cdr _1)))))
+                 (mapcar (serapeum:op (typecase _1
+                                        (string `(identity ,_1))
+                                        (list (case (car _1)
+                                                ((<<=) (list* 'mapcan
+                                                              (list 'quote
+                                                                    (cadadr _1))
+                                                              (cddr _1)))
+                                                ((map) (list* 'mapcar (cdr _1)))
+                                                ((unwrap) `(uiop:nest (car)
+                                                                      (mapcar ,@(cdr _1))))
+                                                (t (cons (intern (symbol-name (car _1))
+                                                                 :git)
+                                                         (cdr _1)))))))
                          commands))))
 
 (defun git:show (object)

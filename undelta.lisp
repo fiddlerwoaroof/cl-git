@@ -4,10 +4,10 @@
   (+ (loop for v across vec
            for sum = (logand 127 v)
              then (+ (ash sum 7)
-                      (logand 127 v))
+                     (logand 127 v))
            finally (return sum))
-      (loop for x from 1 below 2
-            sum (expt 2 (* 7 x)))))
+     (loop for x from 1 below 2
+           sum (expt 2 (* 7 x)))))
 
 (defun extract-offset-to-base (s)
   (offset-distance

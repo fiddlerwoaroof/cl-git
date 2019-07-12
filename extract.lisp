@@ -70,30 +70,36 @@
                       (list* (format-tree-entry next)
                              accum)))))
 
-(defgeneric extract-object-of-type (type s repository)
+(defun extract-object-of-type (type s repository)
+  (with-simple-restart (continue "Skip object of type ~s" type)
+    (%extract-object-of-type type s repository)))
+
+(defgeneric %extract-object-of-type (type s repository)
   (:method ((type integer) s repository)
     (extract-object-of-type (object-type->sym type)
                             s
                             repository))
 
-  (:method ((type (eql :commit)) (s stream) repository)
-    (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s))
+  (:method ((type (eql :commit)) s repository)
+    s)
 
-  (:method ((type (eql :blob)) (s stream) repository)
-    (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s))
+  (:method ((type (eql :blob)) s repository)
+    s)
 
-  (:method ((type (eql :tag)) (s stream) repository)
-    (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s))
+  (:method ((type (eql :tag)) s repository)
+    s)
 
-  (:method ((type (eql :tree)) (s stream) repository)
-    (let* ((data (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
-      (tree-entries data))))
+  (:method ((type (eql :tree)) s repository)
+    (tree-entries s)))
 
 (defun read-object-from-pack (s repository)
   (let* ((metadata (fwoar.bin-parser:extract-high s))
-         (type (get-object-type metadata))
+         (type (object-type->sym (get-object-type metadata)))
          (size (get-object-size metadata))
-         (object-data (extract-object-of-type type s repository)))
+         (decompressed (if (member type '(:ofs-delta :ref-delta))
+                           s
+                           (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
+         (object-data (extract-object-of-type type decompressed repository)))
     (list (cons :type (object-type->sym type))
           (cons :decompressed-size size)
           (cons :object-data object-data)
@@ -114,8 +120,12 @@
                      :element-type '(unsigned-byte 8))
     (alexandria:when-let ((result (chipz:decompress nil (chipz:make-dstate 'chipz:zlib)
                                                     s)))
-      (elt (partition 0 result)
-           1))))
+      (destructuring-bind (type rest)
+          (partition (char-code #\space) result)
+        (extract-object-of-type (object-type->sym (babel:octets-to-string type))
+                                (elt (partition 0 rest)
+                                     1)
+                                repo)))))
 
 (defun extract-object (repo id)
   (if (object repo id)

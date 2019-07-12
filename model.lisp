@@ -17,7 +17,11 @@
 (defclass commit (git-object)
   ())
 
-(defun object-type->sym (object-type)
+(defgeneric object-type->sym (object-type)
+  (:method ((o-t symbol))
+    o-t))
+
+(defmethod object-type->sym ((object-type number))
   (ecase object-type
     (1 :commit)
     (2 :tree)
@@ -25,12 +29,20 @@
     (4 :tag)
     (6 :ofs-delta)
     (7 :ref-delta)))
+(defmethod object-type->sym ((object-type string))
+  (string-case:string-case ((string-downcase object-type))
+    ("commit" :commit)
+    ("tree" :tree)
+    ("blob" :blob)
+    ("tag" :tag)
+    ("ofs-delta" :ofs-delta)
+    ("ref-delta" :ref-delta)))
 
 (defgeneric repository (root)
   (:method ((root string))
-   (fw.lu:new 'repository root))
+    (fw.lu:new 'repository root))
   (:method ((root pathname))
-   (fw.lu:new 'repository root)))
+    (fw.lu:new 'repository root)))
 
 (defun get-local-branches (root)
   (append (get-local-unpacked-branches root)

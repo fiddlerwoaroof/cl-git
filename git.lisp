@@ -17,6 +17,12 @@
   (data-lens.lenses:over *object-data-lens* 'babel:octets-to-string object))
 
 (defgeneric object (repository id)
+  (:method ((repository string) id)
+    (when (probe-file (merge-pathnames ".git" repository))
+      (object (repository repository) id)))
+  (:method ((repository pathname) id)
+    (when (probe-file (merge-pathnames ".git" repository))
+      (object (repository repository) id)))
   (:method ((repository repository) id)
     (car
      (uiop:directory*
