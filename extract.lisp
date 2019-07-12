@@ -116,7 +116,7 @@
           (read-object-from-pack p (repository pack)))))))
 
 (defun extract-loose-object (repo id)
-  (with-open-file (s (object repo id)
+  (with-open-file (s (loose-object repo id)
                      :element-type '(unsigned-byte 8))
     (alexandria:when-let ((result (chipz:decompress nil (chipz:make-dstate 'chipz:zlib)
                                                     s)))
@@ -128,7 +128,7 @@
                                 repo)))))
 
 (defun extract-object (repo id)
-  (if (object repo id)
+  (if (loose-object-p repo id)
       (extract-loose-object repo id)
       (data-lens.lenses:view *object-data-lens*
                              (multiple-value-call 'extract-object-from-pack 

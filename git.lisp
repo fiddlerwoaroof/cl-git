@@ -16,18 +16,22 @@
 (defun turn-read-object-to-string (object)
   (data-lens.lenses:over *object-data-lens* 'babel:octets-to-string object))
 
-(defgeneric object (repository id)
+(defgeneric loose-object (repository id)
   (:method ((repository string) id)
     (when (probe-file (merge-pathnames ".git" repository))
-      (object (repository repository) id)))
+      (loose-object (repository repository) id)))
   (:method ((repository pathname) id)
     (when (probe-file (merge-pathnames ".git" repository))
-      (object (repository repository) id)))
+      (loose-object (repository repository) id)))
   (:method ((repository repository) id)
     (car
      (uiop:directory*
       (merge-pathnames (loose-object-path (serapeum:concat id "*"))
                        (root repository))))))
+
+(defun loose-object-p (repository id)
+  "Is ID an ID of a loose object?"
+  (loose-object repository id))
 
 (defun fanout-table (s)
   (coerce (alexandria:assoc-value

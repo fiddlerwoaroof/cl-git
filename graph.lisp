@@ -30,8 +30,8 @@
                       (nth-value 1 (parse-commit
                                     (split-object
                                      (chipz:decompress nil (chipz:make-dstate 'chipz:zlib)
-                                                       (object repository
-                                                               commit))))))))
+                                                       (loose-object repository
+                                                                     commit))))))))
 
 (defmethod cl-dot:graph-object-node ((graph git-graph) (commit string))
   (alexandria:ensure-gethash commit
