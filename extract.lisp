@@ -115,20 +115,14 @@
           (file-position p object-offset-in-pack)
           (read-object-from-pack p (repository pack)))))))
 
-(defclass git-object ()
-  ((%repo :initarg :repo :reader object-repo)
-   (%hash :initarg :hash :reader object-hash)))
-(defclass loose-object (git-object)
-  ((%file :initarg :file :reader loose-object-file)))
-(defclass packed-object (git-object)
-  ((%pack :initarg :pack :reader packed-object-pack)
-   (%offset :initarg :offset :reader packed-object-offset)))
+(defun root-of (repo)
+  (typecase repo
+    (repository (root repo))
+    ((or pathname string) (namestring
+                           (truename repo)))))
 
 (defun object (repo id)
-  (let ((repo-root (typecase repo
-                     (repository (root repo))
-                     ((or pathname string) (namestring
-                                            (truename repo))))))
+  (let ((repo-root (root-of repo)))
     (or (alexandria:when-let ((object-file (loose-object repo id)))
           (make-instance 'loose-object :repo repo-root :hash id :file object-file))
         (multiple-value-bind (pack offset) (find-object-in-pack-files repo-root id)

@@ -64,3 +64,37 @@
           (uiop:directory*
            (merge-pathnames ".git/objects/pack/*.idx"
                             repo))))
+
+(defgeneric loose-object (repository id)
+  (:method ((repository string) id)
+    (when (probe-file (merge-pathnames ".git" repository))
+      (loose-object (repository repository) id)))
+  (:method ((repository pathname) id)
+    (when (probe-file (merge-pathnames ".git" repository))
+      (loose-object (repository repository) id)))
+  (:method ((repository repository) id)
+    (car
+     (uiop:directory*
+      (merge-pathnames (loose-object-path (serapeum:concat id "*"))
+                       (root repository))))))
+
+(defun loose-object-p (repository id)
+  "Is ID an ID of a loose object?"
+  (loose-object repository id))
+
+(defclass git-object ()
+  ((%repo :initarg :repo :reader object-repo)
+   (%hash :initarg :hash :reader object-hash)))
+(defclass loose-object (git-object)
+  ((%file :initarg :file :reader loose-object-file)))
+(defclass packed-object (git-object)
+  ((%pack :initarg :pack :reader packed-object-pack)
+   (%offset :initarg :offset :reader packed-object-offset)))
+
+(defmethod print-object ((obj git-object) s)
+  (print-unreadable-object (obj s :type t)
+    (format s "~a of ~a"
+            (subseq (object-hash obj) 0 7)
+            (serapeum:string-replace (namestring (user-homedir-pathname))
+                                     (root-of (object-repo obj))
+                                     "~/"))))
