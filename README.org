@@ -22,21 +22,39 @@
 
 *** Get the commit id of the master branch for a specific repository:
 
-    #+BEGIN_SRC lisp
+    #+BEGIN_SRC lisp :exports both
       (git:in-repository "~/quicklisp/local-projects/cl-git")
       (git:git (branch "master")) ;; the argument to branch defaults to "master"
     #+END_SRC 
 
     #+RESULTS:
-    : 077088c8c359489ed1f6d8e441ec76438076542e
+    : 821ddf96c37e65ccc9a0f4bfe2b8ac6e255a2cb6
 
     
 *** Show the commit message
 
-    #+BEGIN_SRC lisp
+    #+BEGIN_SRC lisp :exports both
       (git:in-repository "~/quicklisp/local-projects/cl-git")
       (git:git (branch "master") ;; the argument to branch defaults to "master"
                (show))
+    #+END_SRC 
+
+    #+RESULTS:
+    : tree a7cbe10af08aed7b24b633649db6dc4cec011a3f
+    : parent 077088c8c359489ed1f6d8e441ec76438076542e
+    : author Ed Langley <el-github@elangley.org> 1562896534 -0700
+    : committer Ed Langley <el-github@elangley.org> 1562896534 -0700
+    : 
+    : Add README, polish porcelain
+
+*** Show the messages of the commit's parent
+
+    #+BEGIN_SRC lisp :exports both
+      (git:in-repository "~/quicklisp/local-projects/cl-git")
+      (git:git (branch "master") ;; the argument to branch defaults to "master"
+               (commit-parents) 
+               (map 'git:show)
+               (<<= 'identity))
     #+END_SRC 
 
     #+RESULTS:
@@ -47,24 +65,29 @@
     : 
     : (bump)
 
-*** Show the messages of the commit's parent
+*** Show the files in a commit
 
-    #+BEGIN_SRC lisp
+    #+BEGIN_SRC lisp :exports both
       (git:in-repository "~/quicklisp/local-projects/cl-git")
-      (git:git (branch "master") ;; the argument to branch defaults to "master"
-               (commit-parents) 
-               (map 'git:show)
-               (<<= 'identity))
-    #+END_SRC 
+      (list* #("name" "mode" "hash")
+             (git:git (branch "master")
+                      (contents)
+                      (tree)
+                      (contents)
+                      (filter-tree ".*.lisp")))
+    #+END_SRC
 
     #+RESULTS:
-    : tree 9c8827bc556311dd4a71ec6ccc08860b1b415676
-    : parent ff33293b415cc1907a6071650d045b3dffd8e5c0
-    : author Ed Langley <el-github@elangley.org> 1558056528 -0700
-    : committer Ed Langley <el-github@elangley.org> 1558056528 -0700
-    : 
-    : Fix .asd
-
+    | name           |   mode | hash                                     |
+    | branch.lisp    | 100644 | e06b66967fa4fa005ccf00dcbc7d839b22259593 |
+    | extract.lisp   | 100644 | e69272bd90575f4dc99801a06287531bf2d09017 |
+    | git.lisp       | 100644 | 6e4821d169fc505dd2b598d4bf4bdfc512ea6ebd |
+    | graph.lisp     | 100644 | a4220a28d4800e38b8b8f85db0d97afc8b889293 |
+    | model.lisp     | 100644 | dbfe85d03296435b4a33ef3dc26456080e3f0263 |
+    | package.lisp   | 100644 | d2818bb88b8ec5235a8ae91309f31ba58d941d42 |
+    | porcelain.lisp | 100644 | c1b83741c4dc3104f1686c20b143300db0a0e258 |
+    | undelta.lisp   | 100644 | ae0a070133d1a14d6e940a0f790f40b37e885b22 |
+    | util.lisp      | 100644 | 87c2b9b2dfaa1fbf66b3fe88d3a925593886b159 |
     
 ** Not Implemented Yet:
 
