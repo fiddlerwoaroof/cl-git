@@ -12,22 +12,25 @@
 (defun git:show-repository ()
   *git-repository*)
 
+(defun in-git-package (symbol)
+  (intern (symbol-name symbol)
+          :git))
+
 (defmacro git:git (&rest commands)
   `(uiop:nest ,@(reverse
-                 (mapcar (serapeum:op (typecase _1
+                 (mapcar (serapeum:op (format t "~&~s~%" (symbol-package (car _1)))
+                                      (typecase _1
                                         (string `(identity ,_1))
                                         (list (case (car _1)
-                                                ((<<=) (list* 'mapcan
-                                                              (list 'quote
-                                                                    (cadadr _1))
-                                                              (cddr _1)))
                                                 ((map) (list* 'mapcar (cdr _1)))
                                                 ((unwrap) `(uiop:nest (car)
                                                                       (mapcar ,@(cdr _1))))
-                                                (t (cons (intern (symbol-name (car _1))
-                                                                 :git)
+                                                (t (cons (in-git-package (car _1)) 
                                                          (cdr _1)))))))
                          commands))))
+
+(defun git::<<= (fun &rest args)
+  (apply #'mapcan fun args))
 
 (defun git:show (object)
   (babel:octets-to-string
@@ -57,15 +60,18 @@
                                  'simple-vector))
                        lines)))
     (remove-if-not (serapeum:op
-                     (serapeum:string-prefix-p name-pattern _))
+                     (cl-ppcre:scan name-pattern _ ))
                    columns
                    :key #'tree-entry-te-name)))
 
-(defun git:branch (&optional (branch "master"))
+(defun git:branch (&optional (branch :master))
   #+lispworks
   (declare (notinline serapeum:assocadr))
   (let ((branches (branches (repository *git-repository*))))
-    (nth-value 0 (serapeum:assocadr branch branches
+    (nth-value 0 (serapeum:assocadr (etypecase branch
+                                      (string branch)
+                                      (keyword (string-downcase branch)))
+                                    branches
                                     :test 'equal))))
 
 (defun git:branches ()

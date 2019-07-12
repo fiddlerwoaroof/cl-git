@@ -1,0 +1,71 @@
+* CL-GIT: the pure lisp interface to Git objects
+** Introduction
+
+   Git libraries for Common Lisp common in a couple forms. Some attempt
+   to wrap the libgit2 git library
+   (e.g. https://github.com/russell/cl-git).  Others wrap the git binary
+   in a subprocess (e.g. http://shinmera.github.io/legit/).  Such
+   libraries work well in cases where you control the environment but
+   not all lisp programs run in such circumstances.  This library, on the
+   contrary, attempts to implement parsers for git's file formats as well
+   as a thin "porcelain" interface for manipulating git objects.
+
+** Installation
+   
+   #+BEGIN_SRC sh
+     git clone https://github.com/fiddlerwoaroof/cl-git.git "$HOME/quicklisp/local-projects/cl-git"
+     sbcl --load "$HOME/quicklisp/setup.lisp"
+     CL-USER> (ql:quickload :cl-git)
+   #+END_SRC
+
+** Example usage
+
+*** Get the commit id of the master branch for a specific repository:
+
+    #+BEGIN_SRC lisp
+      (git:in-repository "~/quicklisp/local-projects/cl-git")
+      (git:git (branch "master")) ;; the argument to branch defaults to "master"
+    #+END_SRC 
+
+    #+RESULTS:
+    : 077088c8c359489ed1f6d8e441ec76438076542e
+
+    
+*** Show the commit message
+
+    #+BEGIN_SRC lisp
+      (git:in-repository "~/quicklisp/local-projects/cl-git")
+      (git:git (branch "master") ;; the argument to branch defaults to "master"
+               (show))
+    #+END_SRC 
+
+    #+RESULTS:
+    : tree e70a61be268cbaa6a7825295fbe54beaa3c59c71
+    : parent e1f7c67a8774d65bb941eeb2b41f71f333fa1a94
+    : author Ed Langley <el-github@elangley.org> 1562893971 -0700
+    : committer Ed Langley <el-github@elangley.org> 1562893971 -0700
+    : 
+    : (bump)
+
+*** Show the messages of the commit's parent
+
+    #+BEGIN_SRC lisp
+      (git:in-repository "~/quicklisp/local-projects/cl-git")
+      (git:git (branch "master") ;; the argument to branch defaults to "master"
+               (commit-parents) 
+               (map 'git:show)
+               (<<= 'identity))
+    #+END_SRC 
+
+    #+RESULTS:
+    : tree 9c8827bc556311dd4a71ec6ccc08860b1b415676
+    : parent ff33293b415cc1907a6071650d045b3dffd8e5c0
+    : author Ed Langley <el-github@elangley.org> 1558056528 -0700
+    : committer Ed Langley <el-github@elangley.org> 1558056528 -0700
+    : 
+    : Fix .asd
+
+    
+** Not Implemented Yet:
+
+- Delta refs
