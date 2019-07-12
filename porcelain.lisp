@@ -36,8 +36,8 @@
 
 (defun git:show (object)
   (babel:octets-to-string
-   (coerce (extract-object (repository *git-repository*)
-                           object)
+   (coerce (extract-object-next (object (repository *git-repository*)
+                                        object))
            '(vector serapeum:octet))
    :encoding *git-encoding*))
 

@@ -127,13 +127,13 @@
 (defun object (repo id)
   (let ((repo-root (typecase repo
                      (repository (root repo))
-                     (string (namestring
-                              (truename repo))))))
+                     ((or pathname string) (namestring
+                                            (truename repo))))))
     (or (alexandria:when-let ((object-file (loose-object repo id)))
           (make-instance 'loose-object :repo repo-root :hash id :file object-file))
-        (multiple-value-bind (pack offset) (find-object-in-pack-files repo id)
+        (multiple-value-bind (pack offset) (find-object-in-pack-files repo-root id)
           (when pack
-            (make-instance 'packed-object :repo repo-root :offset offset :pack pack))))))
+            (make-instance 'packed-object :hash id :repo repo-root :offset offset :pack pack))))))
 
 (defun extract-loose-object (repo file)
   (with-open-file (s file :element-type '(unsigned-byte 8))
