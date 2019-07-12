@@ -42,23 +42,24 @@
                                                                            #1#)))))
 
 (defmethod cl-dot:graph-object-points-to ((graph git-graph) (commit string))
-  (mapcar (lambda (c)
-            (setf (gethash (list commit c)
-                           (edge-cache graph))
-                  t)
-            c)
-          (remove-if (lambda (it)
-                       (gethash (list commit it)
-                                (edge-cache graph)))
-                     (mapcar (serapeum:op (subseq _ 0 7))
-                             (get-commit-parents (repo graph) commit)
-                             #+nil
-                             (loop
-                               for cur = (list commit) then parents
-                               for parents = (let ((f (get-commit-parents (repo graph) (car cur))))
-                                               f)
-                               until (or (not parents)
-                                         (cdr parents))
-                               finally (return (or parents
-                                                   (when (not (equal commit (car cur)))
-                                                     cur))))))))
+  #+nil
+  (loop
+    for cur = (list commit) then parents
+    for parents = (let ((f (get-commit-parents (repo graph) (car cur))))
+                    f)
+    until (or (not parents)
+              (cdr parents))
+    finally (return (or parents
+                        (when (not (equal commit (car cur)))
+                          cur))))
+
+  (funcall (data-lens:<>1 (data-lens:over (serapeum:op
+                                            (setf (gethash (list commit _1)
+                                                           (edge-cache graph))
+                                                  t)
+                                            _1))
+                          (data-lens:exclude (serapeum:op
+                                               (gethash (list commit _1)
+                                                        (edge-cache graph))))
+                          (data-lens:over (serapeum:op (subseq _ 0 7))))
+           (get-commit-parents (repo graph) commit)))
