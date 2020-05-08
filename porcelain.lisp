@@ -9,6 +9,10 @@
   (setf *git-repository*
         (truename root)))
 
+(defmacro git:with-repository ((root) &body body)
+  `(let ((*git-repository* (truename ,root)))
+     ,@body))
+
 (defun git:show-repository ()
   *git-repository*)
 
@@ -24,22 +28,49 @@
                              (list (case (in-git-package (car _1))
                                      (git::unwrap `(uiop:nest (car)
                                                               (mapcar ,@(cdr _1))))
-                                     (t (cons (in-git-package (car _1)) 
+                                     (t (cons (in-git-package (car _1))
                                               (cdr _1)))))))
                          commands))))
+
+(defun git::ensure-ref (it)
+  (ensure-ref it))
 
 (defun git::<<= (fun &rest args)
   (apply #'mapcan fun args))
 
-(defun git::map (fun &rest args)
-  (apply #'mapcar fun args))
+(defmacro git::map (fun list)
+  (alexandria:once-only (list)
+    (alexandria:with-gensyms (it)
+      `(mapcar ,(if (consp fun)
+                    `(lambda (,it)
+                       (,(in-git-package (car fun))
+                        ,@(cdr fun)
+                        ,it))
+                    `',(in-git-package fun))
+               ,list))))
+
+(defmacro git::juxt (&rest args)
+  (let ((funs (butlast args))
+        (arg (car (last args))))
+    (alexandria:once-only (arg)
+      `(list ,@(mapcar (lambda (f)
+                         `(,@(alexandria:ensure-list f) ,arg))
+                       funs)))))
+
+(defun git::filter (fun &rest args)
+  (apply #'remove-if-not fun args))
+
+(defun ensure-ref (thing &optional (repo (repository *git-repository*)))
+  (typecase thing
+    (git-ref thing)
+    (t (ref repo thing))))
+
+(defun git::object (thing)
+  (extract-object thing))
 
 (defun git:show (object)
-  (babel:octets-to-string
-   (coerce (extract-object-next (object (repository *git-repository*)
-                                        object))
-           '(vector serapeum:octet))
-   :encoding *git-encoding*))
+  (extract-object
+   object))
 
 (defun git:contents (object)
   (git:show object))
@@ -47,10 +78,14 @@
 (defstruct (tree-entry (:type vector))
   te-name te-mode te-id)
 
-(defun git:tree (commit)
-  (cadr (fw.lu:v-assoc "tree"
-                       (nth-value 1 (parse-commit commit))
-                       :test 'equal)))
+(defun git:component (&rest args)
+  (let ((component-list (butlast args))
+        (target (car (last args))))
+    (fwoar.cl-git::component component-list target)))
+
+(defun git:tree (commit-object)
+  (component :tree
+             commit-object))
 
 (defun git::filter-tree (name-pattern tree)
   #+lispworks
@@ -70,20 +105,15 @@
   #+lispworks
   (declare (notinline serapeum:assocadr))
   (let ((branches (branches (repository *git-repository*))))
-    (nth-value 0 (serapeum:assocadr (etypecase branch
-                                      (string branch)
-                                      (keyword (string-downcase branch)))
-                                    branches
-                                    :test 'equal))))
+    (ref (repository *git-repository*)
+         (serapeum:assocadr (etypecase branch
+                              (string branch)
+                              (keyword (string-downcase branch)))
+                            branches
+                            :test 'equal))))
 
 (defun git:branches ()
   (branches (repository *git-repository*)))
 
 (defun git:commit-parents (commit)
-  (map 'list #'cadr
-       (remove-if-not (serapeum:op
-                        (string= "parent" _))
-                      (nth-value 1
-                                 (fwoar.cl-git::parse-commit
-                                  (git:show commit)))
-                      :key #'car)))
+  (mapcar 'cdr (component :parents commit)))

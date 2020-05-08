@@ -11,7 +11,7 @@
    as a thin "porcelain" interface for manipulating git objects.
 
 ** Installation
-   
+
    #+BEGIN_SRC sh
      % git clone https://github.com/fiddlerwoaroof/fwoar.lisputils.git "$HOME/quicklisp/local-projects/fwoar-lisputils"
      % git clone https://github.com/fiddlerwoaroof/cl-git.git "$HOME/quicklisp/local-projects/cl-git"
@@ -23,73 +23,73 @@
 
 *** Get the commit id of the master branch for a specific repository:
 
-    #+BEGIN_SRC lisp :exports both
+    #+BEGIN_SRC lisp :exports both :results verbatim
       (git:in-repository "~/quicklisp/local-projects/cl-git")
       (git:git (branch "master")) ;; the argument to branch defaults to "master"
-    #+END_SRC 
+    #+END_SRC
 
     #+RESULTS:
-    : 821ddf96c37e65ccc9a0f4bfe2b8ac6e255a2cb6
+    : #<LOOSE-REF 4d4ea31 of ~/git_repos/cl-git/>
 
-    
+
 *** Show the commit message
 
-    #+BEGIN_SRC lisp :exports both
+    #+BEGIN_SRC lisp :exports both :results verbatim
       (git:in-repository "~/quicklisp/local-projects/cl-git")
       (git:git (branch "master") ;; the argument to branch defaults to "master"
-               (show))
-    #+END_SRC 
+               (component :message))
+    #+END_SRC
 
     #+RESULTS:
-    : tree a7cbe10af08aed7b24b633649db6dc4cec011a3f
-    : parent 077088c8c359489ed1f6d8e441ec76438076542e
-    : author Ed Langley <el-github@elangley.org> 1562896534 -0700
-    : committer Ed Langley <el-github@elangley.org> 1562896534 -0700
-    : 
-    : Add README, polish porcelain
+    : doc: Complete installation instruction
 
 *** Show the messages of the commit's parent
 
-    #+BEGIN_SRC lisp :exports both
+    #+BEGIN_SRC lisp :exports both :results verbatim
       (git:in-repository "~/quicklisp/local-projects/cl-git")
       (git:git (branch "master") ;; the argument to branch defaults to "master"
-               (commit-parents) 
-               (map 'git:show)
-               (<<= 'identity))
-    #+END_SRC 
+               (commit-parents))
+    #+END_SRC
 
     #+RESULTS:
-    : tree e70a61be268cbaa6a7825295fbe54beaa3c59c71
-    : parent e1f7c67a8774d65bb941eeb2b41f71f333fa1a94
-    : author Ed Langley <el-github@elangley.org> 1562893971 -0700
-    : committer Ed Langley <el-github@elangley.org> 1562893971 -0700
-    : 
-    : (bump)
+    : (("7df80f061ae5bf6177a1c0888d085281be2801e1"))
 
 *** Show the files in a commit
 
-    #+BEGIN_SRC lisp :exports both
+    #+BEGIN_SRC lisp :exports both :results table :hlines yes
       (git:in-repository "~/quicklisp/local-projects/cl-git")
       (list* #("name" "mode" "hash")
              (git:git (branch "master")
-                      (contents)
-                      (tree)
-                      (contents)
-                      (filter-tree ".*.lisp")))
+                      (component :tree :entries)
+                      (map (juxt (component :name)
+                                 (component :mode)
+                                 (component :hash)))))
     #+END_SRC
 
     #+RESULTS:
     | name           |   mode | hash                                     |
+    | .gitignore     | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
+    | .projectile    | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
+    | LICENSE        | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
+    | README.org     | 100644 | a52be677adeda194bcdfdd12740f00535b6b0997 |
     | branch.lisp    | 100644 | e06b66967fa4fa005ccf00dcbc7d839b22259593 |
-    | extract.lisp   | 100644 | e69272bd90575f4dc99801a06287531bf2d09017 |
-    | git.lisp       | 100644 | 6e4821d169fc505dd2b598d4bf4bdfc512ea6ebd |
-    | graph.lisp     | 100644 | a4220a28d4800e38b8b8f85db0d97afc8b889293 |
-    | model.lisp     | 100644 | dbfe85d03296435b4a33ef3dc26456080e3f0263 |
+    | cl-git.asd     | 100644 | 9db42f61f21e11529b9bc1c52ee118c03d663c04 |
+    | extract.lisp   | 100644 | cf8e6e10786a26ffcd6a3e0fdb97abdf1c9f0345 |
+    | git.lisp       | 100644 | c516dfc248544509c3ae58e3a8c2ab81c225aa9c |
+    | graph.lisp     | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
+    | model.lisp     | 100644 | fb265bb344fee602dc175d1d5eac6bdc2d013a10 |
     | package.lisp   | 100644 | d2818bb88b8ec5235a8ae91309f31ba58d941d42 |
-    | porcelain.lisp | 100644 | c1b83741c4dc3104f1686c20b143300db0a0e258 |
+    | porcelain.lisp | 100644 | 0673dcbe10b945d561a9c3c485fe28aab12b257c |
     | undelta.lisp   | 100644 | ae0a070133d1a14d6e940a0f790f40b37e885b22 |
     | util.lisp      | 100644 | 87c2b9b2dfaa1fbf66b3fe88d3a925593886b159 |
-    
-** Not Implemented Yet:
 
-- Delta refs
+** Partially Implemented:
+
+*** Delta refs
+    Git uses a [[https://git-scm.com/docs/pack-format#_deltified_representation][delta calculation]] routine to compress some of the blobs
+    in a pack file. This delta stores a reference to a base object and
+    a sequence of commands for transforming the base object into the
+    new object. My plan to support this is to first just extract the
+    commands from the pack file and store them as a [[file:delta.lisp::(defclass delta () ((%repository :initarg :repository :reader repository) (%base :initarg :base :reader base) (%commands :initarg :commands :reader commands)))][delta object]]. When
+    this works adequately, I'll write an interpreter to do the actual
+    merge.
