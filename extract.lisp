@@ -42,68 +42,28 @@
         (return-from find-object-in-pack-files
           (values pack mid))))))
 
-(defun behead (data)
-  (elt (partition 0 data)
-       1))
-
-(defun tree-entry (data)
-  (values-list (partition 0 data :with-offset 20)))
-
-(defun format-tree-entry (entry)
-  (destructuring-bind (info sha) (partition 0 entry)
-    (concatenate 'vector
-                 (apply #'concatenate 'vector
-                        (serapeum:intersperse (vector (char-code #\tab))
-                                              (reverse
-                                               (partition (char-code #\space)
-                                                          info))))
-                 (list (char-code #\tab))
-                 (babel:string-to-octets (elt (->sha-string sha) 0) :encoding *git-encoding*))))
-
-(defun tree-entries (data &optional accum)
-  (if (<= (length data) 0)
-      (apply #'concatenate 'vector
-             (serapeum:intersperse (vector (char-code #\newline))
-                                   (nreverse accum)))
-      (multiple-value-bind (next rest) (tree-entry data) 
-        (tree-entries rest
-                      (list* (format-tree-entry next)
-                             accum)))))
-
-(defun extract-object-of-type (type s repository)
-  (with-simple-restart (continue "Skip object of type ~s" type)
-    (%extract-object-of-type type s repository)))
-
-(defgeneric %extract-object-of-type (type s repository)
-  (:method ((type integer) s repository)
-    (extract-object-of-type (object-type->sym type)
-                            s
-                            repository))
-
-  (:method ((type (eql :commit)) s repository)
-    s)
-
-  (:method ((type (eql :blob)) s repository)
-    s)
-
-  (:method ((type (eql :tag)) s repository)
-    s)
-
-  (:method ((type (eql :tree)) s repository)
-    (tree-entries s)))
-
 (defun read-object-from-pack (s repository)
-  (let* ((metadata (fwoar.bin-parser:extract-high s))
+  (let* ((pos (file-position s))
+         (metadata (fwoar.bin-parser:extract-high s))
          (type (object-type->sym (get-object-type metadata)))
          (size (get-object-size metadata))
          (decompressed (if (member type '(:ofs-delta :ref-delta))
-                           s
+                           (let ((buffer (make-array size :element-type '(unsigned-byte 8))))
+                             (read-sequence buffer s)
+                             buffer)
                            (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
-         (object-data (extract-object-of-type type decompressed repository)))
+         (object-data (extract-object-of-type type decompressed repository pos)))
     (list (cons :type (object-type->sym type))
           (cons :decompressed-size size)
           (cons :object-data object-data)
           (cons :raw-data object-data))))
+
+(defun extract-object-of-type (type s repository pos)
+  (with-simple-restart (continue "Skip object of type ~s" type)
+    (-extract-object-of-type (object-type->sym type)
+                             s
+                             repository
+                             :offset-from pos)))
 
 (defun extract-object-from-pack (pack obj-number)
   (with-open-file (s (index-file pack) :element-type '(unsigned-byte 8))
@@ -115,20 +75,6 @@
           (file-position p object-offset-in-pack)
           (read-object-from-pack p (repository pack)))))))
 
-(defun root-of (repo)
-  (typecase repo
-    (repository (root repo))
-    ((or pathname string) (namestring
-                           (truename repo)))))
-
-(defun object (repo id)
-  (let ((repo-root (root-of repo)))
-    (or (alexandria:when-let ((object-file (loose-object repo id)))
-          (make-instance 'loose-object :repo repo-root :hash id :file object-file))
-        (multiple-value-bind (pack offset) (find-object-in-pack-files repo-root id)
-          (when pack
-            (make-instance 'packed-object :hash id :repo repo-root :offset offset :pack pack))))))
-
 (defun extract-loose-object (repo file)
   (with-open-file (s file :element-type '(unsigned-byte 8))
     (alexandria:when-let ((result (chipz:decompress nil (chipz:make-dstate 'chipz:zlib)
@@ -138,20 +84,14 @@
         (extract-object-of-type (object-type->sym (babel:octets-to-string type))
                                 (elt (partition 0 rest)
                                      1)
-                                repo)))))
+                                repo
+                                0)))))
 
-(defgeneric extract-object-next (object)
-  (:method ((object loose-object))
-    (extract-loose-object (object-repo object)
-                          (loose-object-file object)))
-  (:method ((object packed-object))
+(defgeneric extract-object (object)
+  (:method ((object loose-ref))
+    (extract-loose-object (ref-repo object)
+                          (loose-ref-file object)))
+  (:method ((object packed-ref))
     (data-lens.lenses:view *object-data-lens*
-                           (extract-object-from-pack (packed-object-pack object)
-                                                     (packed-object-offset object)))))
-
-(defun extract-object (repo id)
-  (if (loose-object-p repo id)
-      (extract-loose-object repo (loose-object repo id))
-      (data-lens.lenses:view *object-data-lens*
-                             (multiple-value-call 'extract-object-from-pack 
-                               (find-object-in-pack-files (root repo) id)))))
+                           (extract-object-from-pack (packed-ref-pack object)
+                                                     (packed-ref-offset object)))))

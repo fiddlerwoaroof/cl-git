@@ -14,9 +14,6 @@
 (defclass git-object ()
   ())
 
-(defclass commit (git-object)
-  ())
-
 (defgeneric object-type->sym (object-type)
   (:method ((o-t symbol))
     o-t))
@@ -29,6 +26,7 @@
     (4 :tag)
     (6 :ofs-delta)
     (7 :ref-delta)))
+
 (defmethod object-type->sym ((object-type string))
   (string-case:string-case ((string-downcase object-type))
     ("commit" :commit)
@@ -82,19 +80,19 @@
   "Is ID an ID of a loose object?"
   (loose-object repository id))
 
-(defclass git-object ()
-  ((%repo :initarg :repo :reader object-repo)
-   (%hash :initarg :hash :reader object-hash)))
-(defclass loose-object (git-object)
-  ((%file :initarg :file :reader loose-object-file)))
-(defclass packed-object (git-object)
-  ((%pack :initarg :pack :reader packed-object-pack)
-   (%offset :initarg :offset :reader packed-object-offset)))
+(defclass git-ref ()
+  ((%repo :initarg :repo :reader ref-repo)
+   (%hash :initarg :hash :reader ref-hash)))
+(defclass loose-ref (git-ref)
+  ((%file :initarg :file :reader loose-ref-file)))
+(defclass packed-ref (git-ref)
+  ((%pack :initarg :pack :reader packed-ref-pack)
+   (%offset :initarg :offset :reader packed-ref-offset)))
 
-(defmethod print-object ((obj git-object) s)
+(defmethod print-object ((obj git-ref) s)
   (print-unreadable-object (obj s :type t)
     (format s "~a of ~a"
-            (subseq (object-hash obj) 0 7)
+            (subseq (ref-hash obj) 0 7)
             (serapeum:string-replace (namestring (user-homedir-pathname))
-                                     (root-of (object-repo obj))
+                                     (root-of (ref-repo obj))
                                      "~/"))))

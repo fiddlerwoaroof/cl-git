@@ -72,10 +72,6 @@
               (list type
                     (parse-integer length))))))
 
-(defun parse-commit (commit)
-  (destructuring-bind (metadata message)
-      (partition-subseq #(#\newline #\newline)
-                        commit #+(or)(babel:octets-to-string commit :encoding :latin1))
-    (values message
-            (map 'vector (serapeum:op (partition #\space _))
-                 (fwoar.string-utils:split #\newline metadata)))))
+(defun behead (data)
+  (elt (partition 0 data)
+       1))

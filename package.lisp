@@ -10,4 +10,5 @@
 (defpackage :git
   (:use)
   (:export #:show #:branch #:branches #:commit-parents #:in-repository
-           #:current-repository #:show-repository #:git #:tree #:contents))
+           #:with-repository #:current-repository #:show-repository #:git
+           #:tree #:contents #:component))
