@@ -25,8 +25,9 @@
                  (:file "repository" :depends-on ("package" "model"))
                  (:file "tree" :depends-on ("package" "model"))
                  (:file "commit" :depends-on ("package" "model"))
+                 (:file "delta" :depends-on ("package" "model"))
 
-               (:file "extract" :depends-on ("package" "commit" "tree"))
+                 (:file "extract" :depends-on ("package" "commit" "tree" "delta"))
                  (:file "branch" :depends-on ("package" "extract"))
                  (:file "git" :depends-on ("package" "util" "model" "branch"))
 
