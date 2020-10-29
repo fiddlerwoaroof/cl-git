@@ -20,17 +20,25 @@
   (intern (symbol-name symbol)
           :git))
 
+(defun handle-list (_1)
+  (case (in-git-package (car _1))
+    (git::unwrap `(uiop:nest (car)
+                             (mapcar ,@(cdr _1))))
+    (t (cons (in-git-package (car _1))
+             (cdr _1)))))
+
 (defmacro git:git (&rest commands)
   `(uiop:nest ,@(reverse
                  (mapcar (serapeum:op
                            (typecase _1
                              (string `(identity ,_1))
-                             (list (case (in-git-package (car _1))
-                                     (git::unwrap `(uiop:nest (car)
-                                                              (mapcar ,@(cdr _1))))
-                                     (t (cons (in-git-package (car _1))
-                                              (cdr _1)))))))
+                             (list (handle-list _1))))
                          commands))))
+
+(defun ensure-ref (thing &optional (repo (repository *git-repository*)))
+  (typecase thing
+    (git-ref thing)
+    (t (ref repo thing))))
 
 (defun git::ensure-ref (it)
   (ensure-ref it))
@@ -57,13 +65,18 @@
                          `(,@(alexandria:ensure-list f) ,arg))
                        funs)))))
 
+(defmacro git::pipe (&rest funs)
+  (let ((funs (reverse (butlast funs)))
+        (var (car (last funs))))
+    `(uiop:nest ,@(mapcar (lambda (it)
+                            (if (consp it)
+                                `(,(in-git-package (car it)) ,@(cdr it))
+                                `(,(in-git-package it))))
+                          funs)
+                ,var)))
+
 (defun git::filter (fun &rest args)
   (apply #'remove-if-not fun args))
-
-(defun ensure-ref (thing &optional (repo (repository *git-repository*)))
-  (typecase thing
-    (git-ref thing)
-    (t (ref repo thing))))
 
 (defun git::object (thing)
   (extract-object thing))
@@ -115,5 +128,7 @@
 (defun git:branches ()
   (branches (repository *git-repository*)))
 
+(defun git::parents (commit)
+  (alexandria:mappend 'cdr (component :parents commit)))
 (defun git:commit-parents (commit)
-  (mapcar 'cdr (component :parents commit)))
+  (git::parents commit))
