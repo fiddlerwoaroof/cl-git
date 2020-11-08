@@ -15,8 +15,11 @@
   ())
 
 (defgeneric object-type->sym (object-type)
-  (:method ((o-t symbol))
-    o-t))
+  (:documentation "Canonicalizes different representations of an
+  object type to their symbol representation."))
+
+(defmethod object-type->sym ((o-t symbol))
+    o-t)
 
 (defmethod object-type->sym ((object-type number))
   (ecase object-type
