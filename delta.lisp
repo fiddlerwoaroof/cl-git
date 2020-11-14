@@ -30,13 +30,31 @@
 (defun make-ref-delta (base commands repository)
   (fw.lu:new 'ofs-delta base commands repository))
 
+(defun int->bit-vector (n)
+  (let* ((integer-length (integer-length n))
+         (bv-size (* 8 (ceiling integer-length 8)))
+         (bv (make-array bv-size :element-type 'bit)))
+    (loop :for ix :below integer-length
+          :do (setf (aref bv (- bv-size 1 ix))
+                    (if (logbitp ix n)
+                        1
+                        0)))
+    bv))
+
+(defun bit-vector->int (bv)
+  (let ((bv-size (array-total-size bv)))
+    (loop :for ix :from (1- bv-size) :downto 0
+          :for n :from 0
+          :unless (zerop (aref bv ix))
+            :sum (expt 2 n))))
+
 (defun partition-commands (data)
   (let ((idx 0))
     (labels ((advance ()
                (prog1 (elt data idx)
                  (incf idx)))
              (get-command ()
-               (let* ((bv (bit-smasher:int->bits (elt data idx)))
+               (let* ((bv (int->bit-vector (elt data idx)))
                       (discriminator (elt bv 0))
                       (insts (subseq bv 1)))
                  (incf idx)
@@ -46,7 +64,7 @@
                            (coerce (loop repeat (count 1 insts) collect (advance))
                                    '(vector (unsigned-byte 8))))
                      (list :add
-                           (coerce (loop repeat (1- (bit-smasher:bits->int (reverse insts)))
+                           (coerce (loop repeat (1- (bit-vector->int (reverse insts)))
                                          collect (advance))
                                    '(vector (unsigned-byte 8))))))))
       (loop while (< idx (length data))
