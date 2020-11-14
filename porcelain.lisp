@@ -132,3 +132,13 @@
   (alexandria:mappend 'cdr (component :parents commit)))
 (defun git:commit-parents (commit)
   (git::parents commit))
+
+(defun git:rev-list (ref-id)
+  "Return the commits reachable from the ref."
+  (labels ((iterate (queue accum)
+             (if (null queue)
+                 accum
+                 (iterate (append (cdr queue)
+                                  (git::parents (ensure-ref (car queue))))
+                   (cons (car queue) accum)))))
+    (iterate (list ref-id) ())))

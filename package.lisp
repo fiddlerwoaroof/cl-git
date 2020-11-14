@@ -11,4 +11,5 @@
   (:use)
   (:export #:show #:branch #:branches #:commit-parents #:in-repository
            #:with-repository #:current-repository #:show-repository #:git
-           #:tree #:contents #:component))
+           #:tree #:contents #:component
+           #:rev-list))
