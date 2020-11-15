@@ -29,11 +29,11 @@
           (get-local-packed-branches root)))
 
 (defgeneric branches (repository)
-  (:method ((repository repository))
+  (:method ((repository git-repository))
     (get-local-branches (root repository))))
 
 (defgeneric branch (repository name)
-  (:method ((repository repository) name)
+  (:method ((repository git-repository) name)
     (second
      (find name (get-local-branches (root repository))
            :test 'equal

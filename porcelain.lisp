@@ -13,6 +13,9 @@
         (ensure-repository
          (truename root))))
 
+(defun git:repository ()
+  *git-repository*)
+
 (defmacro git:with-repository ((root) &body body)
   `(let ((*git-repository* (ensure-repository ,root)))
      ,@body))

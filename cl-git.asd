@@ -34,3 +34,14 @@
 
                ;; stable programmer interface
                (:file "porcelain" :depends-on ("package" "git" "commit"))))
+(defsystem :cl-git/tests
+  :description ""
+  :author "Ed L <edward@elangley.org>"
+  :license "MIT"
+  :depends-on (#:alexandria
+               #:uiop
+               #:serapeum
+               #:fiveam
+               #:cl-git)
+  :serial t
+  :components ())

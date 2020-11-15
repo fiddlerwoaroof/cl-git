@@ -3,7 +3,8 @@
 (defpackage :fwoar.cl-git
   (:use :cl )
   (:export
-   #:ensure-ref))
+   #:ensure-ref
+   #:repository))
 
 (defpackage :cl-git-user
   (:use :cl :fwoar.cl-git))
@@ -13,4 +14,4 @@
   (:export #:show #:branch #:branches #:commit-parents #:in-repository
            #:with-repository #:current-repository #:show-repository #:git
            #:tree #:contents #:component
-           #:rev-list))
+           #:rev-list #:repository))

@@ -29,7 +29,4 @@
     (t (ref repo thing))))
 
 (defun ensure-repository (thing)
-  (etypecase thing
-    (repository thing)
-    (string (repository thing))
-    (pathname (repository thing))))
+  (repository thing))
