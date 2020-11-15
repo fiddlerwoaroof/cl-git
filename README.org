@@ -35,7 +35,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : #<LOOSE-REF 3df0b6f of ~/git_repos/cl-git/>
+    : #<fwoar.cl-git::loose-ref 1869d7e of ~/git_repos/cl-git/>
 
 
 *** Show the commit message
@@ -47,18 +47,20 @@
     #+END_SRC
 
     #+RESULTS:
-    : feat: resolve strings as refs in first argument to GIT:GIT
+    : bug: fix filter-tree
 
 *** Show the messages of the commit's parent
 
     #+BEGIN_SRC lisp :exports both :results verbatim
       (git:in-repository "~/quicklisp/local-projects/cl-git")
       (git:git (branch "master") ;; the argument to branch defaults to "master"
-               (commit-parents))
+               (commit-parents)
+               (map (component :message)))
     #+END_SRC
 
     #+RESULTS:
-    : (#<LOOSE-REF 216c17e of ~/git_repos/cl-git/>)
+    : ("feat: resolve strings as refs in first argument to GIT:GIT
+    : ")
 
 *** Show the files in a commit
     - Note taken on [2020-11-15 Sun 01:49] \\
@@ -81,9 +83,9 @@
     | .gitignore      | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
     | .projectile     | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
     | LICENSE         | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
-    | README.org      | 100644 | 90b98fab8f0ac78924c3ed632e5ea7c677f5b2f3 |
+    | README.org      | 100644 | 06173630a1337132bf87a68bb1276100e4ea89b6 |
     | branch.lisp     | 100644 | e06b66967fa4fa005ccf00dcbc7d839b22259593 |
-    | cl-git.asd      | 100644 | 265a98fb79595e0067e53d8cf222dec4283f8525 |
+    | cl-git.asd      | 100644 | b17701de06b3d67f4edd556a5b704485cbc830c0 |
     | commit.lisp     | 100644 | 197e10755343900cfbcb7fc6d863d4b3231e74d4 |
     | delta.lisp      | 100644 | 995d5a4fb90f02caeda47c01a2b3427828d2be0e |
     | extract.lisp    | 100644 | 4707eca4ee0c70520ccdc57c0e831187b21271e7 |
@@ -91,7 +93,7 @@
     | graph.lisp      | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
     | model.lisp      | 100644 | aa372879f4feeb170bc6d06047bf50f55a23042e |
     | package.lisp    | 100644 | 65b2d0c35ea59f3d3cb88161402fd7e3de9798e4 |
-    | porcelain.lisp  | 100644 | 8906d2e411f63ea2558d5d4721495801506b0cb1 |
+    | porcelain.lisp  | 100644 | eb040e54b6113931cac47b7ac1f828f0357dd846 |
     | protocol.lisp   | 100644 | 7e24a6a7a4349497fce06830fa132e9a8ef6fd06 |
     | repository.lisp | 100644 | 3eded300aa984e9ad2eb066e5ca4f78fe83e4137 |
     | tree.lisp       | 100644 | 06bceb0a932817adedc9192edd6f9d4077277624 |
