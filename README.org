@@ -35,7 +35,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : #<LOOSE-REF 9d3dfa0 of ~/git_repos/cl-git/>
+    : #<LOOSE-REF 3df0b6f of ~/git_repos/cl-git/>
 
 
 *** Show the commit message
@@ -47,7 +47,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : feat: start moving to ref objects instead of strings
+    : Merge commit 'e24e23183435b58a7d6176d848ee0f6c6b3e815a'
 
 *** Show the messages of the commit's parent
 
@@ -58,7 +58,8 @@
     #+END_SRC
 
     #+RESULTS:
-    : (#<PACKED-REF 2af7b67 of ~/git_repos/cl-git/>)
+    : (#<LOOSE-REF f4040ce of ~/git_repos/cl-git/>
+    :  #<LOOSE-REF e24e231 of ~/git_repos/cl-git/>)
 
 *** Show the files in a commit
 
@@ -77,7 +78,7 @@
     | .gitignore      | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
     | .projectile     | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
     | LICENSE         | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
-    | README.org      | 100644 | 62af1bf37cb1d91a426251ee5b09029833efe18c |
+    | README.org      | 100644 | 2703b3dae5a5f8bee662bcc88820b348b41a9ca5 |
     | branch.lisp     | 100644 | e06b66967fa4fa005ccf00dcbc7d839b22259593 |
     | cl-git.asd      | 100644 | 265a98fb79595e0067e53d8cf222dec4283f8525 |
     | commit.lisp     | 100644 | 197e10755343900cfbcb7fc6d863d4b3231e74d4 |
@@ -85,11 +86,11 @@
     | extract.lisp    | 100644 | 4707eca4ee0c70520ccdc57c0e831187b21271e7 |
     | git.lisp        | 100644 | c516dfc248544509c3ae58e3a8c2ab81c225aa9c |
     | graph.lisp      | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
-    | model.lisp      | 100644 | a339f9dfc57b461e09d94c176fe90d90c13daf42 |
+    | model.lisp      | 100644 | 508861152a0ad7ebfafedd12cee7f4c0a170785c |
     | package.lisp    | 100644 | a9d12e807ab4cdf923de2b0479507910054da0d4 |
-    | porcelain.lisp  | 100644 | 7247e63da9cd823e5ee1e480c2863d87679ec0a3 |
+    | porcelain.lisp  | 100644 | d2bf143d76f597409fa729ea6095e89fe2fb9d79 |
     | protocol.lisp   | 100644 | 7e24a6a7a4349497fce06830fa132e9a8ef6fd06 |
-    | repository.lisp | 100644 | 9567a5825bf65b7e90d6f9a02574a00b53af9171 |
+    | repository.lisp | 100644 | d9fd84a83d400f416097571ae378302e4cce289b |
     | tree.lisp       | 100644 | b757bb704b4c7a54622b7bd197ad5c1ea51ef2cc |
     | undelta.lisp    | 100644 | ae0a070133d1a14d6e940a0f790f40b37e885b22 |
     | util.lisp       | 100644 | 66279b2fa08c9d0872e888b85fe14d9950e27326 |

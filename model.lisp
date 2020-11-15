@@ -41,9 +41,11 @@
 
 (defgeneric repository (root)
   (:method ((root string))
-    (fw.lu:new 'repository root))
+    (let ((root (parse-namestring root)))
+      (repository root)))
   (:method ((root pathname))
-    (fw.lu:new 'repository root)))
+    (let ((root (truename root)))
+      (fw.lu:new 'repository root))))
 
 (defun get-local-branches (root)
   (append (get-local-unpacked-branches root)

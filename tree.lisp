@@ -7,12 +7,13 @@
   (fw.lu:new 'git-tree entries))
 
 (defclass tree-entry ()
-  ((%mode :initarg :mode :reader te-mode)
+  ((%repo :initarg :repo :reader repository)
+   (%mode :initarg :mode :reader te-mode)
    (%name :initarg :name :reader te-name)
    (%hash :initarg :hash :reader te-hash)))
 
-(defun tree-entry (name mode hash)
-  (fw.lu:new 'tree-entry name mode hash))
+(defun tree-entry (repo name mode hash)
+  (fw.lu:new 'tree-entry repo name mode hash))
 
 (defmethod print-object ((o tree-entry) s)
   (if *print-readably*
@@ -29,29 +30,30 @@
 (defun parse-tree-entry (data)
   (values-list (partition 0 data :with-offset 20)))
 
-(defun format-tree-entry (entry)
+(defun format-tree-entry (repo entry)
   (destructuring-bind (info sha) (partition 0 entry)
-    (destructuring-bind (mode name) (partition #\space
-                                               (babel:octets-to-string info :encoding *git-encoding*))
-      (tree-entry name mode (elt (->sha-string sha) 0)))))
+    (destructuring-bind (mode name)
+        (partition #\space
+                   (babel:octets-to-string info :encoding *git-encoding*))
+      (tree-entry repo name mode (elt (->sha-string sha) 0)))))
 
-(defun tree-entries (data &optional accum)
+(defun tree-entries (repo data &optional accum)
   (if (<= (length data) 0)
       (nreverse accum)
       (multiple-value-bind (next rest) (parse-tree-entry data)
         (tree-entries rest
-                      (list* (format-tree-entry next)
+                      (list* (format-tree-entry repo next)
                              accum)))))
 
 (defmethod -extract-object-of-type ((type (eql :tree)) s repository &key)
-  (git-tree (tree-entries s)))
+  (git-tree (tree-entries repository s)))
 
 (defmethod component ((component (eql :entries)) (object git-tree))
   (entries object))
 (defmethod component ((component string) (object git-tree))
-  (remove component (entries object)
-          :test-not #'equal
-          :key 'te-name))
+  (car (remove component (entries object)
+               :test-not #'equal
+               :key 'te-name)))
 (defmethod component ((component pathname) (object git-tree))
   (remove-if-not (lambda (it)
                    (pathname-match-p it component))
@@ -64,3 +66,6 @@
   (te-mode object))
 (defmethod component ((component (eql :hash)) (object tree-entry))
   (te-hash object))
+(defmethod component ((component (eql :ref)) (object tree-entry))
+  (ref (repository object)
+       (te-hash object)))

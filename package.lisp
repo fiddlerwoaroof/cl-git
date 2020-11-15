@@ -2,7 +2,8 @@
 
 (defpackage :fwoar.cl-git
   (:use :cl )
-  (:export ))
+  (:export
+   #:ensure-ref))
 
 (defpackage :cl-git-user
   (:use :cl :fwoar.cl-git))

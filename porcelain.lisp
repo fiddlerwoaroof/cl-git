@@ -10,10 +10,11 @@
 
 (defun git:in-repository (root)
   (setf *git-repository*
-        (truename root)))
+        (ensure-repository
+         (truename root))))
 
 (defmacro git:with-repository ((root) &body body)
-  `(let ((*git-repository* (truename ,root)))
+  `(let ((*git-repository* (ensure-repository ,root)))
      ,@body))
 
 (defun git:show-repository ()
@@ -120,8 +121,8 @@
 (defun git:branch (&optional (branch :master))
   #+lispworks
   (declare (notinline serapeum:assocadr))
-  (let ((branches (branches (repository *git-repository*))))
-    (ref (repository *git-repository*)
+  (let ((branches (branches *git-repository*)))
+    (ref *git-repository*
          (serapeum:assocadr (etypecase branch
                               (string branch)
                               (keyword (string-downcase branch)))
@@ -129,7 +130,7 @@
                             :test 'equal))))
 
 (defun git:branches ()
-  (branches (repository *git-repository*)))
+  (branches *git-repository*))
 
 (defun git::parents (commit)
   (alexandria:mappend (data-lens:<>1 (data-lens:over 'ensure-ref)
