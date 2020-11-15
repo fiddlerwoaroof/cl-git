@@ -31,21 +31,41 @@
     (t (cons (in-git-package (car _1))
              (cdr _1)))))
 
+(defun git::resolve-refish (it)
+  (flet ((hash-p (it)
+           (and (> (length it) 32)
+                (every (serapeum:op
+                         (digit-char-p _1 16))
+                       it))))
+    (cond
+      ((let ((it "master"))
+         (block is-branch
+           (mapc (fw.lu:destructuring-lambda ((name hash))
+                   (when (equal it name)
+                     (return-from is-branch
+                       (ensure-ref hash))))
+                 (branches *git-repository*))
+           nil)))
+      ((hash-p it) (ensure-ref it)))))
+
 (defmacro git:git (&rest commands)
   `(uiop:nest ,@(reverse
-                 (mapcar (serapeum:op
-                           (typecase _1
-                             (string `(identity ,_1))
-                             (list (handle-list _1))))
-                         commands))))
-
-(defun ensure-ref (thing &optional (repo (repository *git-repository*)))
-  (typecase thing
-    (git-ref thing)
-    (t (ref repo thing))))
+                 (funcall (data-lens:<>1
+                           (data-lens:over (serapeum:op
+                                             (typecase _1
+                                               (string `(identity ,_1))
+                                               (list (handle-list _1)))))
+                           (data-lens:transform-head (serapeum:op
+                                                       (etypecase _1
+                                                         (string `(resolve-refish ,_1))
+                                                         (t _1)))))
+                          commands))))
 
 (defun git::ensure-ref (it)
   (ensure-ref it))
+
+(defun git::decode (it)
+  (babel:octets-to-string it :encoding *git-encoding*))
 
 (defun git::<<= (fun &rest args)
   (apply #'mapcan fun args))
@@ -86,8 +106,7 @@
   (extract-object thing))
 
 (defun git:show (object)
-  (extract-object
-   object))
+  (extract-object object))
 
 (defun git:contents (object)
   (git:show object))
