@@ -7,6 +7,7 @@
                            (truename repo)))))
 
 (defun ref (repo id)
+  "Given a REPOsitory and a ref ID return the ref-id object."
   (let ((repo-root (root-of repo)))
     (or (alexandria:when-let ((object-file (loose-object repo id)))
           (make-instance 'loose-ref
