@@ -10,6 +10,12 @@
    contrary, attempts to implement parsers for git's file formats as well
    as a thin "porcelain" interface for manipulating git objects.
 
+** Contributing
+
+  This project uses (loosely) conventional-commits: https://www.conventionalcommits.org/en/v1.0.0/
+
+  Also, some use of https://github.com/fiddlerwoaroof/git-issue has been made
+
 ** Installation
 
    #+BEGIN_SRC sh
