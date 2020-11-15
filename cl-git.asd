@@ -24,11 +24,11 @@
                (:file "model" :depends-on ("package"))
                (:file "protocol" :depends-on ("package" "model"))
                (:file "repository" :depends-on ("package" "model"))
-               (:file "tree" :depends-on ("package" "model"))
-               (:file "commit" :depends-on ("package" "model"))
-               (:file "delta" :depends-on ("package" "model"))
+               (:file "tree" :depends-on ("package" "model" "protocol"))
+               (:file "commit" :depends-on ("package" "model" "protocol"))
+               (:file "delta" :depends-on ("package" "model" "protocol"))
 
-               (:file "extract" :depends-on ("package" "commit" "tree" "delta"))
+               (:file "extract" :depends-on ("package" "protocol" "commit" "tree" "delta"))
                (:file "branch" :depends-on ("package" "extract"))
                (:file "git" :depends-on ("package" "util" "model" "branch"))
 
