@@ -129,7 +129,9 @@
   (branches (repository *git-repository*)))
 
 (defun git::parents (commit)
-  (alexandria:mappend 'cdr (component :parents commit)))
+  (alexandria:mappend (data-lens:<>1 (data-lens:over 'ensure-ref)
+                                     #'cdr)
+                      (component :parents commit)))
 (defun git:commit-parents (commit)
   (git::parents commit))
 
@@ -138,7 +140,8 @@
   (labels ((iterate (queue accum)
              (if (null queue)
                  accum
-                 (iterate (append (cdr queue)
-                                  (git::parents (ensure-ref (car queue))))
-                   (cons (car queue) accum)))))
-    (iterate (list ref-id) ())))
+                 (destructuring-bind (next . rest) queue
+                   (iterate (append rest
+                                    (git::parents next))
+                     (cons next accum))))))
+    (iterate (list (ensure-ref ref-id)) ())))
