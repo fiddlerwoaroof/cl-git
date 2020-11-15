@@ -13,6 +13,7 @@
                :fwoar-lisputils
                :cl-ppcre
                :fwoar-lisputils/bin-parser
+               :babel
                :ironclad
                :serapeum
                :split-sequence
