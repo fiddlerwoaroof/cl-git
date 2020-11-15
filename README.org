@@ -61,10 +61,13 @@
     : (#<LOOSE-REF 216c17e of ~/git_repos/cl-git/>)
 
 *** Show the files in a commit
+    - Note taken on [2020-11-15 Sun 01:49] \\
+      If the table comes out wrong, =*print-case*= must be =:downcase=
 
     #+BEGIN_SRC lisp :exports both :results table :hlines yes
       (git:in-repository "~/quicklisp/local-projects/cl-git")
-      (list* #("name" "mode" "hash")
+      (list* #("Name" "Mode" "Hash")
+             'hline
              (git:git (branch "master")
                       (component :tree :entries)
                       (map (juxt (component :name)
@@ -73,11 +76,12 @@
     #+END_SRC
 
     #+RESULTS:
-    | name            |   mode | hash                                     |
+    | Name            |   Mode | Hash                                     |
+    |-----------------+--------+------------------------------------------|
     | .gitignore      | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
     | .projectile     | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
     | LICENSE         | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
-    | README.org      | 100644 | c133adfd06f1bff1140d163147465fd3b996f4e5 |
+    | README.org      | 100644 | 90b98fab8f0ac78924c3ed632e5ea7c677f5b2f3 |
     | branch.lisp     | 100644 | e06b66967fa4fa005ccf00dcbc7d839b22259593 |
     | cl-git.asd      | 100644 | 265a98fb79595e0067e53d8cf222dec4283f8525 |
     | commit.lisp     | 100644 | 197e10755343900cfbcb7fc6d863d4b3231e74d4 |
@@ -93,6 +97,31 @@
     | tree.lisp       | 100644 | 06bceb0a932817adedc9192edd6f9d4077277624 |
     | undelta.lisp    | 100644 | ae0a070133d1a14d6e940a0f790f40b37e885b22 |
     | util.lisp       | 100644 | 66279b2fa08c9d0872e888b85fe14d9950e27326 |
+
+*** Show the files that match a pattern
+    - Note taken on [2020-11-15 Sun 01:49] \\
+      If the table comes out wrong, =*print-case*= must be =:downcase=
+
+    #+BEGIN_SRC lisp :exports both :results table :hlines yes
+      (git:with-repository ("~/quicklisp/local-projects/cl-git/")
+        (list* '("Name" "Mode" "Hash")
+               'hline
+               (git:git (branch "master")
+                        (tree)
+                        (filter-tree "^.....?[.]lisp")
+                        (map (juxt (component :name)
+                                   (component :mode)
+                                   (component :hash))))))
+    #+END_SRC
+
+    #+RESULTS:
+    | Name       |   Mode | Hash                                     |
+    |------------+--------+------------------------------------------|
+    | delta.lisp | 100644 | 995d5a4fb90f02caeda47c01a2b3427828d2be0e |
+    | graph.lisp | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
+    | model.lisp | 100644 | aa372879f4feeb170bc6d06047bf50f55a23042e |
+    | tree.lisp  | 100644 | 06bceb0a932817adedc9192edd6f9d4077277624 |
+    | util.lisp  | 100644 | 66279b2fa08c9d0872e888b85fe14d9950e27326 |
 
 ** Partially Implemented:
 

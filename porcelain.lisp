@@ -111,9 +111,6 @@
 (defun git:contents (object)
   (git:show object))
 
-(defstruct (tree-entry (:type vector))
-  te-name te-mode te-id)
-
 (defun git:component (&rest args)
   (let ((component-list (butlast args))
         (target (car (last args))))
@@ -126,16 +123,12 @@
 (defun git::filter-tree (name-pattern tree)
   #+lispworks
   (declare (notinline serapeum:string-prefix-p))
-  (let* ((lines (fwoar.string-utils:split #\newline tree))
-         (columns (map 'list
-                       (serapeum:op
-                         (coerce (fwoar.string-utils:split #\tab _)
-                                 'simple-vector))
-                       lines)))
+  (let* ((tree-entries (component :entries tree))
+         (scanner (cl-ppcre:create-scanner name-pattern)))
     (remove-if-not (serapeum:op
-                     (cl-ppcre:scan name-pattern _ ))
-                   columns
-                   :key #'tree-entry-te-name)))
+                     (cl-ppcre:scan scanner _))
+                   tree-entries
+                   :key #'te-name)))
 
 (defun git:branch (&optional (branch :master))
   #+lispworks
