@@ -45,4 +45,4 @@
                #:fiveam
                #:cl-git)
   :serial t
-  :components ())
+  :components ((:file "tests/branch-resolution")))
