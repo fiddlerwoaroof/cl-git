@@ -16,6 +16,14 @@
 
   Also, some use of https://github.com/fiddlerwoaroof/git-issue has been made
 
+  To run the tests in a clean environment, you can do (this will eventually be a Github Action):
+
+  #+BEGIN_SRC sh
+    docker run \
+      -v $PWD/docker-run:/code fiddlerwoaroof/sbcl-static:latest \
+      --load /code/main.lisp
+  #+END_SRC
+
 ** Installation
 
    #+BEGIN_SRC sh
