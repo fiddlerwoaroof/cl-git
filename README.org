@@ -29,7 +29,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : #<LOOSE-REF 4d4ea31 of ~/git_repos/cl-git/>
+    : #<LOOSE-REF 9d3dfa0 of ~/git_repos/cl-git/>
 
 
 *** Show the commit message
@@ -41,7 +41,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : doc: Complete installation instruction
+    : feat: start moving to ref objects instead of strings
 
 *** Show the messages of the commit's parent
 
@@ -52,7 +52,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : (("7df80f061ae5bf6177a1c0888d085281be2801e1"))
+    : (#<PACKED-REF 2af7b67 of ~/git_repos/cl-git/>)
 
 *** Show the files in a commit
 
@@ -67,21 +67,26 @@
     #+END_SRC
 
     #+RESULTS:
-    | name           |   mode | hash                                     |
-    | .gitignore     | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
-    | .projectile    | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
-    | LICENSE        | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
-    | README.org     | 100644 | a52be677adeda194bcdfdd12740f00535b6b0997 |
-    | branch.lisp    | 100644 | e06b66967fa4fa005ccf00dcbc7d839b22259593 |
-    | cl-git.asd     | 100644 | 9db42f61f21e11529b9bc1c52ee118c03d663c04 |
-    | extract.lisp   | 100644 | cf8e6e10786a26ffcd6a3e0fdb97abdf1c9f0345 |
-    | git.lisp       | 100644 | c516dfc248544509c3ae58e3a8c2ab81c225aa9c |
-    | graph.lisp     | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
-    | model.lisp     | 100644 | fb265bb344fee602dc175d1d5eac6bdc2d013a10 |
-    | package.lisp   | 100644 | d2818bb88b8ec5235a8ae91309f31ba58d941d42 |
-    | porcelain.lisp | 100644 | 0673dcbe10b945d561a9c3c485fe28aab12b257c |
-    | undelta.lisp   | 100644 | ae0a070133d1a14d6e940a0f790f40b37e885b22 |
-    | util.lisp      | 100644 | 87c2b9b2dfaa1fbf66b3fe88d3a925593886b159 |
+    | name            |   mode | hash                                     |
+    | .gitignore      | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
+    | .projectile     | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
+    | LICENSE         | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
+    | README.org      | 100644 | 62af1bf37cb1d91a426251ee5b09029833efe18c |
+    | branch.lisp     | 100644 | e06b66967fa4fa005ccf00dcbc7d839b22259593 |
+    | cl-git.asd      | 100644 | 265a98fb79595e0067e53d8cf222dec4283f8525 |
+    | commit.lisp     | 100644 | 197e10755343900cfbcb7fc6d863d4b3231e74d4 |
+    | delta.lisp      | 100644 | 995d5a4fb90f02caeda47c01a2b3427828d2be0e |
+    | extract.lisp    | 100644 | 4707eca4ee0c70520ccdc57c0e831187b21271e7 |
+    | git.lisp        | 100644 | c516dfc248544509c3ae58e3a8c2ab81c225aa9c |
+    | graph.lisp      | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
+    | model.lisp      | 100644 | a339f9dfc57b461e09d94c176fe90d90c13daf42 |
+    | package.lisp    | 100644 | a9d12e807ab4cdf923de2b0479507910054da0d4 |
+    | porcelain.lisp  | 100644 | 7247e63da9cd823e5ee1e480c2863d87679ec0a3 |
+    | protocol.lisp   | 100644 | 7e24a6a7a4349497fce06830fa132e9a8ef6fd06 |
+    | repository.lisp | 100644 | 9567a5825bf65b7e90d6f9a02574a00b53af9171 |
+    | tree.lisp       | 100644 | b757bb704b4c7a54622b7bd197ad5c1ea51ef2cc |
+    | undelta.lisp    | 100644 | ae0a070133d1a14d6e940a0f790f40b37e885b22 |
+    | util.lisp       | 100644 | 66279b2fa08c9d0872e888b85fe14d9950e27326 |
 
 ** Partially Implemented:
 

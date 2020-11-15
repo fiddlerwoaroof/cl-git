@@ -144,4 +144,5 @@
                    (iterate (append rest
                                     (git::parents next))
                      (cons next accum))))))
-    (iterate (list (ensure-ref ref-id)) ())))
+    (iterate (list (ensure-ref ref-id))
+      ())))
