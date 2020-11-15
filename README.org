@@ -98,3 +98,17 @@
     commands from the pack file and store them as a [[file:delta.lisp::(defclass delta () ((%repository :initarg :repository :reader repository) (%base :initarg :base :reader base) (%commands :initarg :commands :reader commands)))][delta object]]. When
     this works adequately, I'll write an interpreter to do the actual
     merge.
+
+    A workaround for the moment is to manually unpack the pack files:
+
+    #+BEGIN_SRC sh
+      mkdir tmp
+      mv .git/objects/pack/* tmp
+      git unpack-obj < tmp/*.pack
+    #+END_SRC
+
+    Or, you can undeltify the packs by, first unpacking the packfile as above and then doing:
+
+    #+BEGIN_SRC sh
+      git repack --window=0
+    #+END_SRC
