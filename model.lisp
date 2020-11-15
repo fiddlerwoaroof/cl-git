@@ -10,6 +10,8 @@
 
 (defclass repository ()
   ((%root :initarg :root :reader root)))
+(defclass git-repository (repository)
+  ())
 
 (defclass git-object ()
   ())
@@ -39,13 +41,51 @@
     ("ofs-delta" :ofs-delta)
     ("ref-delta" :ref-delta)))
 
-(defgeneric repository (root)
+(define-condition alts-fallthrough (error)
+  ((%fallthrough-message :initarg :fallthrough-message :reader fallthrough-message)
+   (%args :initarg :args :reader args))
+  (:report (lambda (c s)
+             (format s "~a ~s"
+                     (fallthrough-message c)
+                     (args c)))))
+
+;; TODO: figure out how to handle ambiguity? restarts?
+(define-method-combination alts (&key fallthrough-message) ((methods *))
+  (:arguments arg)
+  (progn
+    (mapc (serapeum:op
+            (let ((qualifiers (method-qualifiers _1)))
+              (unless (and (eql 'alts (car qualifiers))
+                           (if (null (cdr qualifiers))
+                               t
+                               (and (symbolp (cadr qualifiers))
+                                    (null (cddr qualifiers)))))
+                (invalid-method-error _1 "invalid qualifiers: ~s" qualifiers))))
+          methods)
+    `(or ,@(mapcar (serapeum:op `(call-method ,_1))
+                   methods)
+         (error 'alts-fallthrough
+                :fallthrough-message ,fallthrough-message
+                :args ,arg))))
+
+(defgeneric resolve-repository (object)
+  (:documentation "resolve an OBJECT to a repository implementation")
+  (:method-combination alts :fallthrough-message "failed to resolve repository"))
+
+(defmethod resolve-repository alts :git ((root pathname))
+  (alexandria:when-let ((root (probe-file root)))
+    (let* ((git-dir (merge-pathnames (make-pathname :directory '(:relative ".git"))
+                                     root)))
+      (when (probe-file git-dir)
+        (fw.lu:new 'git-repository root)))))
+
+(defgeneric repository (object)
+  (:documentation "get the repository for an object")
+  (:method ((root pathname))
+    (resolve-repository root))
   (:method ((root string))
     (let ((root (parse-namestring root)))
-      (repository root)))
-  (:method ((root pathname))
-    (let ((root (truename root)))
-      (fw.lu:new 'repository root))))
+      (repository root))))
 
 (defun get-local-branches (root)
   (append (get-local-unpacked-branches root)
