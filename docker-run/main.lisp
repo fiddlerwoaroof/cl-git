@@ -5,5 +5,7 @@
     (ql:quickload :cl-git/tests)
     nil)
 
-(5am:run-all-tests)
-
+(sb-ext:exit
+ :code (if (5am:run-all-tests)
+           0
+           42))
