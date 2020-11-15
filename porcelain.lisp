@@ -135,14 +135,19 @@
 (defun git:commit-parents (commit)
   (git::parents commit))
 
-(defun git:rev-list (ref-id)
+(defun git:rev-list (ref-id &optional (limit nil limit-p))
   "Return the commits reachable from the ref."
-  (labels ((iterate (queue accum)
-             (if (null queue)
+  (when limit-p
+    (rotatef ref-id limit))
+  (labels ((iterate (queue accum &optional (count 0))
+             (if (or (when limit-p
+                       (= limit count))
+                     (null queue))
                  accum
                  (destructuring-bind (next . rest) queue
                    (iterate (append rest
                                     (git::parents next))
-                     (cons next accum))))))
+                     (cons next accum)
+                     (1+ count))))))
     (iterate (list (ensure-ref ref-id))
       ())))
