@@ -41,7 +41,8 @@
   (if (<= (length data) 0)
       (nreverse accum)
       (multiple-value-bind (next rest) (parse-tree-entry data)
-        (tree-entries rest
+        (tree-entries repo
+                      rest
                       (list* (format-tree-entry repo next)
                              accum)))))
 
