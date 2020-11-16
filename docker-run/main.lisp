@@ -6,6 +6,6 @@
     nil)
 
 (sb-ext:exit
- :code (if (5am:run-all-tests)
+ :code (if (5am:explain! (5am:run :fwoar.cl-git))
            0
            42))

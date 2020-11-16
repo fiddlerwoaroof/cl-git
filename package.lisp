@@ -4,7 +4,8 @@
   (:use :cl )
   (:export
    #:ensure-ref
-   #:repository))
+   #:repository
+   #:component))
 
 (defpackage :cl-git-user
   (:use :cl :fwoar.cl-git))

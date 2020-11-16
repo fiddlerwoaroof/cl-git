@@ -29,6 +29,14 @@
    (cadr
     (fw.lu:v-assoc :tree (metadata object)
                    :test 'string-equal))))
+(defmethod component ((component (eql :author)) (object git-commit))
+  (second
+   (fw.lu:v-assoc :author (metadata object)
+                  :test 'string-equal)))
+(defmethod component ((component (eql :committer)) (object git-commit))
+  (second
+   (fw.lu:v-assoc :committer (metadata object)
+                  :test 'string-equal)))
 (defmethod component ((component (eql :parents)) (object git-commit))
   (coerce (remove-if-not (serapeum:op
                            (string= "parent" _))
