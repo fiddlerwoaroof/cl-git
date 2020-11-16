@@ -45,4 +45,7 @@
                #:fiveam
                #:cl-git)
   :serial t
-  :components ((:file "tests/branch-resolution")))
+  :components ((:module "tests"
+                :components ((:file "tests")
+                             (:file "branch-resolution" :depends-on ("tests"))
+                             (:file "git-objects" :depends-on ("tests"))))))
