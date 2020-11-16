@@ -7,7 +7,8 @@
   ())
 (defclass fake-ref ()
   ((%repository :initarg :repository :reader repository)
-   (%id :initarg :id :reader id)))
+   (%id :initarg :id :reader id)
+   (%parents :initarg :parents :reader parents :initform ())))
 
 (defparameter *expected-branches*
   '(("master" "ref1")
@@ -24,13 +25,14 @@
   (fw.lu:new 'fake-ref repository id))
 
 (fiveam:def-suite :fwoar.cl-git.branch-resolution
-  :description "testing branch resolution")
+  :description "testing branch resolution"
+  :in :fwoar.cl-git)
 (fiveam:in-suite :fwoar.cl-git.branch-resolution)
 
 (fiveam:def-test simple ()
   (5am:is (typep (git:with-repository (:branch-resolution)
                    (git:repository))
                  'fake-repository))
-  (5am:is (equal (git:with-repository (:branch-resolution)
-                   (git:git (branches)))
-                 *expected-branches*)))
+  (5am:is (equal *expected-branches*
+                 (git:with-repository (:branch-resolution)
+                   (git:git (branches))))))
