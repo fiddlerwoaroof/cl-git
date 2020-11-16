@@ -3,7 +3,6 @@
                   (fwoar.repl-utils:github "fiddlerwoaroof" "cl-git")
                   (ql:quickload :cl-git)
                   (ql:quickload :cl-git/tests)
-                  (error "foobar")
                   nil)
     (serious-condition (c)
       (format t "~&Exiting on condition: ~s~%" c)
