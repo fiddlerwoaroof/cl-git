@@ -15,4 +15,4 @@
                          42))
   (serious-condition (c)
     (format t "~&Exiting on condition: ~s~%" c)
-    (sb-ext:exit 43)))
+    (sb-ext:exit :code 43)))
