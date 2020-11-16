@@ -33,5 +33,4 @@
                  'fake-repository))
   (5am:is (equal (git:with-repository (:branch-resolution)
                    (git:git (branches)))
-                 *expected-branches*))
-  (5am:is (= 1 0)))
+                 *expected-branches*)))
