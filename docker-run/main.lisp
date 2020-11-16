@@ -7,7 +7,7 @@
                   nil)
     (serious-condition (c)
       (format t "~&Exiting on condition: ~s~%" c)
-      (sb-ext:exit 40)))
+      (sb-ext:exit :code 40)))
 
 (handler-case (sb-ext:exit
                :code (if (5am:explain! (5am:run :fwoar.cl-gir))
