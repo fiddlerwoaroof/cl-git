@@ -8,7 +8,7 @@
       (format t "~&Exiting on condition: ~s~%" c)
       (sb-ext:exit :code 40)))
 
-(handler-case (alexandria:if-let ((results (5am:run :fwoar.cl-gir)))
+(handler-case (alexandria:if-let ((results (5am:run :fwoar.cl-git)))
                 (sb-ext:exit
                  :code (if (5am:explain! results)
                            0
