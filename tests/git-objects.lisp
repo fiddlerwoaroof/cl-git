@@ -79,7 +79,7 @@
 
 (fiveam:def-test pack-files-commit ()
   (let* ((hash "7d7b56a6a64e090041f55293511f48aba6699f1a")
-         (ref (fwoar.cl-git::packed-ref-for-object
+         (ref (fwoar.cl-git::packed-ref
                :fwoar.cl-git.git-objects.pack
                hash))
          (object (progn (fiveam:is (not (null ref)))
@@ -114,7 +114,7 @@
 
 (fiveam:def-test pack-files-tree ()
   (let* ((hash "1da546ab4697b719efb62f11fd785d6ad3b226d2")
-         (ref (fwoar.cl-git::packed-ref-for-object
+         (ref (fwoar.cl-git::packed-ref
                :fwoar.cl-git.git-objects.pack
                hash))
          (object (progn (fiveam:is (not (null ref)))
@@ -134,7 +134,7 @@
 
 (fiveam:def-test pack-files-blob ()
   (let* ((hash "4b5fa63702dd96796042e92787f464e28f09f17d")
-         (ref (fwoar.cl-git::packed-ref-for-object
+         (ref (fwoar.cl-git::packed-ref
                :fwoar.cl-git.git-objects.pack
                hash))
          (object (progn (fiveam:is (not (null ref)))
@@ -146,7 +146,7 @@
 "
                    (babel:octets-to-string
                     (fwoar.cl-git::extract-object
-                     (fwoar.cl-git::packed-ref-for-object
+                     (fwoar.cl-git::packed-ref
                       :fwoar.cl-git.git-objects.pack
                       "4b5fa63702dd96796042e92787f464e28f09f17d"))
                     :encoding :utf-8)))))
