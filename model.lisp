@@ -98,15 +98,16 @@
 (defun pack (index pack repository)
   (fw.lu:new 'pack index pack repository))
 
-(defun pack-files (repo)
-  (mapcar (serapeum:op
-            (pack _1
-                  (merge-pathnames
-                   (make-pathname :type "pack") _1)
-                  (repository repo)))
-          (uiop:directory*
-           (merge-pathnames ".git/objects/pack/*.idx"
-                            repo))))
+(defgeneric pack-files (repo)
+  (:method ((repo git-repository))
+    (mapcar (serapeum:op
+              (pack _1
+                    (merge-pathnames
+                     (make-pathname :type "pack") _1)
+                    repo))
+            (uiop:directory*
+             (merge-pathnames ".git/objects/pack/*.idx"
+                              (root-of repo))))))
 
 (defgeneric loose-object (repository id)
   (:method ((repository string) id)
@@ -138,6 +139,8 @@
   (print-unreadable-object (obj s :type t)
     (format s "~a of ~a"
             (subseq (ref-hash obj) 0 7)
+            (ref-repo obj)
+            #+(or)
             (serapeum:string-replace (namestring (user-homedir-pathname))
                                      (root-of (ref-repo obj))
                                      "~/"))))

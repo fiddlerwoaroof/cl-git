@@ -56,7 +56,7 @@
     (list (cons :type (object-type->sym type))
           (cons :decompressed-size size)
           (cons :object-data object-data)
-          (cons :raw-data object-data))))
+          (cons :raw-data decompressed))))
 
 (defun extract-object-of-type (type s repository pos)
   (with-simple-restart (continue "Skip object of type ~s" type)
