@@ -152,7 +152,7 @@
     #+BEGIN_SRC sh
       mkdir tmp
       mv .git/objects/pack/* tmp
-      git unpack-obj < tmp/*.pack
+      git unpack-objects < tmp/*.pack
     #+END_SRC
 
     Or, you can undeltify the packs by, first unpacking the packfile as above and then doing:
