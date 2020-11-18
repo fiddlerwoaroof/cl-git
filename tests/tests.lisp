@@ -5,3 +5,7 @@
 
 (5am:def-suite :fwoar.cl-git
   :description "tests of cl-git")
+
+(fiveam:def-suite :fwoar.cl-git.git-objects
+  :description "testing branch resolution"
+  :in :fwoar.cl-git)
