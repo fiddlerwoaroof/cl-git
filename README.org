@@ -43,7 +43,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : #<LOOSE-REF ee4281c of /Users/edwlan/git_repos/cl-git/>
+    : #<LOOSE-REF b27750d of /Users/edwlan/quicklisp/local-projects/cl-git/>
 
 
 *** Show the commit message
@@ -55,7 +55,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : feat(tests): add tests for pack files
+    : feat(delta): first cut of delta extraction
 
 *** Show the messages of the commit's parent
 
@@ -67,7 +67,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : ("chore: CI done
+    : ("refactor: minor refactors, start using transducers
     : ")
 
 *** Show the files in a commit
@@ -92,21 +92,21 @@
     | .gitignore      | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
     | .projectile     | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
     | LICENSE         | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
-    | README.org      | 100644 | 8d4d0a83e681ed4fe4d89693bb4290244ec5ea6f |
+    | README.org      | 100644 | 8be1c00d70982a8dd819673289f57bab201ae9fb |
     | branch.lisp     | 100644 | 6ee2b1e254e7895d55ecd534b2fa16267ec14389 |
-    | cl-git.asd      | 100644 | 7248159b03dcdf85ceaa9d3b0df571b80a3ce206 |
-    | commit.lisp     | 100644 | d6509a0be2a12d9f57491bd7d664e02fda618eb8 |
-    | delta.lisp      | 100644 | 995d5a4fb90f02caeda47c01a2b3427828d2be0e |
+    | cl-git.asd      | 100644 | fac607480b840e3037abd80617d9b19a0fe214c7 |
+    | commit.lisp     | 100644 | d6a83c1a351eb2c0f5315ceddcde37545b7781d6 |
+    | delta.lisp      | 100644 | 1fa43a800829dfa49e540129d8243f748bb17543 |
     | docker-run      |  40000 | 53b626da144188970e4c1b63ee3b23212e277672 |
-    | extract.lisp    | 100644 | a73c8c7917b15af8fcd0141bfd21c60aacc9ee07 |
-    | git.lisp        | 100644 | c516dfc248544509c3ae58e3a8c2ab81c225aa9c |
+    | extract.lisp    | 100644 | 4bfb480eb2993cf516fded3adec49483322fdcf4 |
+    | git.lisp        | 100644 | bad6f54787369609581669de923afaf378ed4002 |
     | graph.lisp      | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
     | model.lisp      | 100644 | 346fa823d06b6cebead49c7ec37d90b3cc660528 |
     | package.lisp    | 100644 | 538e7211817953a036f8f913dd4509c8edc6a489 |
-    | porcelain.lisp  | 100644 | 4699a3273082511158ed559f56e758547bb569ec |
+    | porcelain.lisp  | 100644 | 9190e6fb27aad51167b23f1cc4089e426241159b |
     | protocol.lisp   | 100644 | 7e24a6a7a4349497fce06830fa132e9a8ef6fd06 |
     | repository.lisp | 100644 | af1cc58c12b32770fa63ac29502a446b3b059c90 |
-    | tests           |  40000 | c1b8c8dd1cd307ff836920256ef109e2b8fda283 |
+    | tests           |  40000 | 47c7f38df49c936fa6263eb70fc6749f33f8be34 |
     | tree.lisp       | 100644 | 42eceec42eb35d4ee2b739e99d7e1a51f1b9fd35 |
     | undelta.lisp    | 100644 | ae0a070133d1a14d6e940a0f790f40b37e885b22 |
     | util.lisp       | 100644 | 66279b2fa08c9d0872e888b85fe14d9950e27326 |
@@ -130,7 +130,7 @@
     #+RESULTS:
     | Name       |   Mode | Hash                                     |
     |------------+--------+------------------------------------------|
-    | delta.lisp | 100644 | 995d5a4fb90f02caeda47c01a2b3427828d2be0e |
+    | delta.lisp | 100644 | 1fa43a800829dfa49e540129d8243f748bb17543 |
     | graph.lisp | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
     | model.lisp | 100644 | 346fa823d06b6cebead49c7ec37d90b3cc660528 |
     | tree.lisp  | 100644 | 42eceec42eb35d4ee2b739e99d7e1a51f1b9fd35 |
@@ -138,7 +138,7 @@
 
 ** Partially Implemented:
 
-*** Delta refs
+*** Delta refs [1/2]
     Git uses a [[https://git-scm.com/docs/pack-format#_deltified_representation][delta calculation]] routine to compress some of the blobs
     in a pack file. This delta stores a reference to a base object and
     a sequence of commands for transforming the base object into the
@@ -162,3 +162,8 @@
     #+BEGIN_SRC sh
       git repack --window=0
     #+END_SRC
+
+
+**** DONE Decode delta commands
+     CLOSED: [2021-05-19 Wed 01:49]
+**** TODO Write interpreter

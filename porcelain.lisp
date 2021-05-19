@@ -147,9 +147,8 @@
   (branches *git-repository*))
 
 (defun git::parents (commit)
-  (alexandria:mappend (data-lens:<>1 (data-lens:over 'ensure-ref)
-                                     #'cdr)
-                      (component :parents commit)))
+  (mapcar 'ensure-ref
+          (component :parents commit)))
 (defun git:commit-parents (commit)
   (git::parents commit))
 
