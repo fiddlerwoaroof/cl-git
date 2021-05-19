@@ -48,33 +48,63 @@
           :unless (zerop (aref bv ix))
             :sum (expt 2 n))))
 
+(defun expand-copy (copy)
+  ;; TODO: implement this
+  copy)
+
 (defun partition-commands (data)
   (let ((idx 0))
     (labels ((advance ()
-               (prog1 (elt data idx)
-                 (incf idx)))
+               (if (>= idx (length data))
+                   (progn (incf idx)
+                          0)
+                   (prog1 (elt data idx)
+                     (incf idx))))
              (get-command ()
                (let* ((bv (int->bit-vector (elt data idx)))
                       (discriminator (elt bv 0))
                       (insts (subseq bv 1)))
                  (incf idx)
                  (if (= 1 discriminator)
-                     (list :copy
-                           insts
-                           (coerce (loop repeat (count 1 insts) collect (advance))
-                                   '(vector (unsigned-byte 8))))
+                     (expand-copy
+                      (list :copy
+                            insts
+                            (coerce (loop repeat (count 1 insts) collect (advance))
+                                    '(vector (unsigned-byte 8)))))
                      (list :add
-                           (coerce (loop repeat (1- (bit-vector->int (reverse insts)))
+                           (coerce (loop repeat (bit-vector->int insts)
                                          collect (advance))
                                    '(vector (unsigned-byte 8))))))))
       (loop while (< idx (length data))
             collect (get-command)))))
 
-(defmethod -extract-object-of-type ((type (eql :ofs-delta)) s repository &key offset-from)
-  (format t "~&data: ~s~%" s)
-  (make-ofs-delta offset-from
-                  (partition-commands s)
-                  repository))
+
+(defun get-ofs-delta-offset (buf)
+  (let ((idx 0))
+    (flet ((advance ()
+             (prog1 (elt buf idx)
+               (incf idx))))
+      (let* ((c (advance))
+             (ofs (logand c 127)))
+        (loop
+          do (format t "~&~s ~s ~s" idx c ofs)
+          while (> (logand c 128) 0)
+          do
+             (setf c (advance))
+             (setf ofs (+ (ash (1+ ofs)
+                               7)
+                          (logand c 127))))
+        (values (- ofs) idx)))))
+
+(defmethod -extract-object-of-type ((type (eql :ofs-delta)) s repository &key offset-from packfile)
+  (multiple-value-bind (offset consumed) (get-ofs-delta-offset s)
+    (make-ofs-delta (list packfile
+                          (+ offset-from offset))
+                    (partition-commands (chipz:decompress
+                                         nil
+                                         (chipz:make-dstate 'chipz:zlib)
+                                         (subseq s consumed)))
+                    repository)))
 (defmethod -extract-object-of-type ((type (eql :ref-delta)) s repository &key offset-from)
   (make-ref-delta offset-from
                   (partition-commands s)

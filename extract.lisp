@@ -52,18 +52,19 @@
                              (read-sequence buffer s)
                              buffer)
                            (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
-         (object-data (extract-object-of-type type decompressed repository pos)))
+         (object-data (extract-object-of-type type decompressed repository pos (pathname s))))
     (list (cons :type (object-type->sym type))
           (cons :decompressed-size size)
           (cons :object-data object-data)
           (cons :raw-data decompressed))))
 
-(defun extract-object-of-type (type s repository pos)
+(defun extract-object-of-type (type s repository pos packfile)
   (with-simple-restart (continue "Skip object of type ~s" type)
     (-extract-object-of-type (object-type->sym type)
                              s
                              repository
-                             :offset-from pos)))
+                             :offset-from pos
+                             :packfile packfile)))
 
 (defun extract-object-from-pack (pack obj-number)
   (with-open-file (s (index-file pack) :element-type '(unsigned-byte 8))
@@ -85,7 +86,8 @@
                                 (elt (partition 0 rest)
                                      1)
                                 repo
-                                0)))))
+                                0
+                                nil)))))
 
 (defgeneric extract-object (object)
   (:method ((object loose-ref))
