@@ -41,14 +41,13 @@
                          (digit-char-p _1 16))
                        it))))
     (cond
-      ((let ((it "master"))
-         (block is-branch
-           (mapc (fw.lu:destructuring-lambda ((name hash))
-                   (when (equal it name)
-                     (return-from is-branch
-                       (ensure-ref hash))))
-                 (branches *git-repository*))
-           nil)))
+      ((block is-branch
+         (mapc (fw.lu:destructuring-lambda ((name hash))
+                 (when (equal it name)
+                   (return-from is-branch
+                     (ensure-ref hash))))
+               (branches *git-repository*))
+         nil))
       ((hash-p it) (ensure-ref it)))))
 
 (defmacro git:git (&rest commands)
@@ -60,7 +59,7 @@
                                                (list (handle-list _1)))))
                            (data-lens:transform-head (serapeum:op
                                                        (etypecase _1
-                                                         (string `(resolve-refish ,_1))
+                                                         (string `(git::resolve-refish ,_1))
                                                          (t _1)))))
                           commands))))
 
