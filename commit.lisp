@@ -38,10 +38,12 @@
    (fw.lu:v-assoc :committer (metadata object)
                   :test 'string-equal)))
 (defmethod component ((component (eql :parents)) (object git-commit))
-  (coerce (remove-if-not (serapeum:op
-                           (string= "parent" _))
-                         (metadata object)
-                         :key #'car)
-          'list))
+  (data-lens.transducers:into '()
+                              (data-lens:•
+                               (data-lens.transducers:filtering
+                                (data-lens:on (data-lens:== "parent" :test 'equal)
+                                              #'car))
+                               (data-lens.transducers:mapping #'cadr))
+                              (metadata object)))
 (defmethod component ((component (eql :message)) (object git-commit))
   (data object))

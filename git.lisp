@@ -76,19 +76,19 @@
          (version 4)
          (fanout 8)
          (shas (+ fanout
-                   (* 4 256)))
+                  #.(* 4 256)))
          (packed-crcs (+ shas
-                          (* 20 object-count)))
+                         (* 20 object-count)))
          (4-byte-offsets (+ packed-crcs
-                             (* 4 object-count)))
+                            (* 4 object-count)))
          (8-byte-offsets-pro (+ 4-byte-offsets
-                                 (* object-count 4)))  
+                                (* object-count 4)))
          (pack-sha (- (file-length idx-stream)
-                       40))
+                      40))
          (8-byte-offsets (when (/= 8-byte-offsets-pro pack-sha)
                            8-byte-offsets-pro))
          (idx-sha (- (file-length idx-stream)
-                      20)))
+                     20)))
     (values (sym->plist signature
                         version
                         fanout
@@ -137,4 +137,3 @@
                    (read-object-metadata-from-pack pack))
                 (:offset . ,offset))
               result)))))
-

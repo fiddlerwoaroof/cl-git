@@ -10,6 +10,7 @@
                :chipz
                :cl-dot
                :data-lens
+               :data-lens/beta/transducers
                :fwoar-lisputils
                :cl-ppcre
                :fwoar-lisputils/bin-parser
