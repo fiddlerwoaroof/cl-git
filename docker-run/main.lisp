@@ -1,8 +1,8 @@
 #.(handler-case (progn
                   (fwoar.repl-utils:clone "https://github.com/fiddlerwoaroof/fwoar.lisputils.git" "fwoar-lisputils")
                   (fwoar.repl-utils:github "fiddlerwoaroof" "cl-git")
-                  (ql:update-client)
-                  (ql:update-all-dists)
+                  (ql:update-client :prompt nil)
+                  (ql:update-all-dists :prompt nil)
                   (ql:quickload :cl-git)
                   (ql:quickload :cl-git/tests)
                   nil)
