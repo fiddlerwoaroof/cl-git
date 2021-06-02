@@ -169,6 +169,12 @@
     #+END_SRC
 
 
-**** DONE Decode delta commands
-     CLOSED: [2021-05-19 Wed 01:49]
-**** TODO Write interpreter
+*** git:git porcelain
+    I have some thoughts abound a =(git:git ...)= form that can be
+    used as a [[https://github.com/shinmera/lquery.git][lQuery-like]] DSL for manipulating git repositories, and
+    this is partially implemented in [[file+emacs:./porcelain.lisp][porcelain.lisp]], but the details
+    need more thought before it is ready.
+
+
+** TODOs
+*** TODO start implementing Pharo-like git integration (read-only first, commits later)
