@@ -141,12 +141,13 @@
                         (fiveam:is (equal hash (fwoar.cl-git::ref-hash ref)))
                         (fiveam:is (equal *fake-repo* (fwoar.cl-git::ref-repo ref)))
                         (fwoar.cl-git::extract-object ref))))
-    (5am:is (typep object '(vector (unsigned-byte 8))))
+    (5am:is (typep object 'fwoar.cl-git::blob))
     (5am:is (equal "hello, world
 "
                    (babel:octets-to-string
-                    (fwoar.cl-git::extract-object
-                     (fwoar.cl-git::packed-ref
-                      :fwoar.cl-git.git-objects.pack
-                      "4b5fa63702dd96796042e92787f464e28f09f17d"))
+                    (fwoar.cl-git::data
+                     (fwoar.cl-git::extract-object
+                      (fwoar.cl-git::packed-ref
+                       :fwoar.cl-git.git-objects.pack
+                       "4b5fa63702dd96796042e92787f464e28f09f17d")))
                     :encoding :utf-8)))))

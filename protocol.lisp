@@ -1,8 +1,11 @@
 (in-package :fwoar.cl-git)
 
+(defclass+ blob ()
+  ((%data :reader data :initarg :data)))
+
 (defgeneric -extract-object-of-type (type s repository &key &allow-other-keys)
   (:method ((type (eql :blob)) s repository &key)
-    s)
+    (blob s))
 
   (:method ((type (eql :tag)) s repository &key)
     s))

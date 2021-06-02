@@ -1,5 +1,19 @@
 (in-package :fwoar.cl-git)
 
+(defmacro defclass+ (name (&rest super) &body (direct-slots &rest options))
+  (let ((initargs (mapcan (lambda (slot)
+                            (serapeum:unsplice
+                             (make-symbol
+                              (symbol-name
+                               (getf (cdr slot)
+                                     :initarg)))))
+                          direct-slots)))
+    `(progn (defclass ,name ,super
+              ,direct-slots
+              ,@options)
+            (defun ,name (,@initargs)
+              (fw.lu:new ',name ,@initargs)))))
+
 (fw.lu:defun-ct batch-4 (bytes)
   (mapcar 'fwoar.bin-parser:be->int
           (serapeum:batches bytes 4)))
@@ -31,7 +45,7 @@
 (defun partition (char string &key from-end (with-offset nil wo-p))
   (let ((pos (position char string :from-end from-end)))
     (if pos
-        (if wo-p 
+        (if wo-p
             (list (subseq string 0 (+ pos with-offset 1))
                   (subseq string (+ pos 1 with-offset)))
             (list (subseq string 0 pos)

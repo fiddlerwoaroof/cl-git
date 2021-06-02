@@ -1,19 +1,5 @@
 (in-package :fwoar.cl-git)
 
-(defmacro defclass+ (name (&rest super) &body (direct-slots &rest options))
-  (let ((initargs (mapcan (lambda (slot)
-                            (serapeum:unsplice
-                             (make-symbol
-                              (symbol-name
-                               (getf (cdr slot)
-                                     :initarg)))))
-                          direct-slots)))
-    `(progn (defclass ,name ,super
-              ,direct-slots
-              ,@options)
-            (defun ,name (,@initargs)
-              (fw.lu:new ',name ,@initargs)))))
-
 (defclass delta ()
   ((%repository :initarg :repository :reader repository)
    (%base :initarg :base :reader base)

@@ -24,7 +24,7 @@
 
                ;; data model
                (:file "model" :depends-on ("package"))
-               (:file "protocol" :depends-on ("package" "model"))
+               (:file "protocol" :depends-on ("package" "model" "util"))
                (:file "repository" :depends-on ("package" "model"))
                (:file "tree" :depends-on ("package" "model" "protocol"))
                (:file "commit" :depends-on ("package" "model" "protocol"))
