@@ -19,7 +19,6 @@
 (fiveam:def-test basic-commit ()
   (let ((fwoar.cl-git::*git-repository* *fake-repo*)
         (object (fwoar.cl-git::extract-loose-object
-                 nil
                  (asdf:system-relative-pathname
                   :cl-git
                   "tests/sample-git-objects/hello-world-commit.git-obj"))))
@@ -49,7 +48,6 @@
 
 (fiveam:def-test basic-tree ()
   (let ((object (fwoar.cl-git::extract-loose-object
-                 nil
                  (asdf:system-relative-pathname
                   :cl-git
                   "tests/sample-git-objects/hello-world-tree.git-obj"))))

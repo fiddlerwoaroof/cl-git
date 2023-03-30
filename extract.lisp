@@ -42,7 +42,7 @@
         (return-from find-object-in-pack-files
           (values pack mid))))))
 
-(defun read-object-from-pack (s repository)
+(defun read-object-from-pack (s)
   (let* ((pos (file-position s))
          (metadata (fwoar.bin-parser:extract-high s))
          (type (object-type->sym (get-object-type metadata)))
@@ -51,18 +51,17 @@
                            (let ((buffer (make-array size :element-type '(unsigned-byte 8))))
                              (read-sequence buffer s)
                              buffer)
-                           (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
-         (object-data (extract-object-of-type type decompressed repository pos)))
-    (list (cons :type (object-type->sym type))
-          (cons :decompressed-size size)
-          (cons :object-data object-data)
-          (cons :raw-data decompressed))))
+                           (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s))))
+    (values type
+            decompressed
+            pos)))
 
-(defun extract-object-of-type (type s repository pos)
+(defun extract-object-of-type (type s pos repository hash)
   (with-simple-restart (continue "Skip object of type ~s" type)
     (-extract-object-of-type (object-type->sym type)
                              s
                              repository
+                             :hash hash
                              :offset-from pos)))
 
 (defun extract-object-from-pack (pack obj-number)
@@ -73,25 +72,28 @@
         (file-position s (+ offset-offset (* 4 obj-number)))
         (let ((object-offset-in-pack (read-bytes 4 'fwoar.bin-parser:be->int s)))
           (file-position p object-offset-in-pack)
-          (read-object-from-pack p (repository pack)))))))
+          (read-object-from-pack p))))))
 
-(defun extract-loose-object (repo file)
+(defun extract-loose-object (file)
   (with-open-file (s file :element-type '(unsigned-byte 8))
     (alexandria:when-let ((result (chipz:decompress nil (chipz:make-dstate 'chipz:zlib)
                                                     s)))
       (destructuring-bind (type rest)
           (partition (char-code #\space) result)
-        (extract-object-of-type (object-type->sym (babel:octets-to-string type))
-                                (elt (partition 0 rest)
-                                     1)
-                                repo
-                                0)))))
+        (values (object-type->sym (babel:octets-to-string type))
+                (elt (partition 0 rest)
+                     1)
+                0)))))
 
 (defgeneric extract-object (object)
+  (:method :around ((object git-ref))
+    (fw.lu:with-accessors* (ref-repo ref-hash) object
+      (multiple-value-call 'extract-object-of-type
+        (call-next-method)
+        ref-repo
+        ref-hash)))
   (:method ((object loose-ref))
-    (extract-loose-object (ref-repo object)
-                          (loose-ref-file object)))
+    (extract-loose-object (loose-ref-file object)))
   (:method ((object packed-ref))
-    (data-lens.lenses:view *object-data-lens*
-                           (extract-object-from-pack (packed-ref-pack object)
-                                                     (packed-ref-offset object)))))
+    (extract-object-from-pack (packed-ref-pack object)
+                              (packed-ref-offset object))))

@@ -148,8 +148,7 @@
   (branches *git-repository*))
 
 (defun git::parents (commit)
-  (alexandria:mappend (data-lens:<>1 (data-lens:over 'ensure-ref)
-                                     #'cdr)
+  (alexandria:mappend (data-lens:over 'ensure-ref)
                       (component :parents commit)))
 (defun git:commit-parents (commit)
   (git::parents commit))
@@ -168,5 +167,7 @@
                                     (git::parents next))
                      (cons next accum)
                      (1+ count))))))
-    (iterate (list (ensure-ref ref-id))
-      ())))
+    (remove-duplicates (iterate (list (ensure-ref ref-id))
+                         ())
+                       :test 'equal
+                       :key 'ref-hash)))
