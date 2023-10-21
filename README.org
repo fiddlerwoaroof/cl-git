@@ -38,52 +38,52 @@
 *** Get the commit id of the master branch for a specific repository:
 
     #+BEGIN_SRC lisp :exports both :results verbatim
-      (git:in-repository "~/quicklisp/local-projects/cl-git")
-      (git:branch "master") ;; the argument to branch defaults to "master"
+      (co.fwoar.git:in-repository ".")
+      (co.fwoar.git:branch "master") ;; the argument to branch defaults to "master"
     #+END_SRC
 
     #+RESULTS:
-    : #<LOOSE-REF 657ab33 of ~/git_repos/git.fiddlerwoaroof.com/u/edwlan/cl-git/>
+    : #<LOOSE-REF 63b3f56 of .../u/edwlan/cl-git/>
 
 
 *** Show the commit message
 
     #+BEGIN_SRC lisp :exports both :results verbatim
-      (git:in-repository "~/quicklisp/local-projects/cl-git")
-      (git:component :message (git:branch "master"))
+      (co.fwoar.git:in-repository ".")
+      (co.fwoar.git:component :message (co.fwoar.git:branch "master"))
     #+END_SRC
 
     #+RESULTS:
-    : feat(blobs): introduce BLOB class
+    : Create CNAME
 
 *** Show the messages of the commit's parent
 
     #+BEGIN_SRC lisp :exports both :results verbatim
-      (git:in-repository "~/quicklisp/local-projects/cl-git")
-      (let* ((branch (git:branch "master"))
-             (parents (git:parents branch)))
+      (co.fwoar.git:in-repository ".")
+      (let* ((branch (co.fwoar.git:branch "master"))
+             (parents (co.fwoar.git:parents branch)))
         (mapcar (lambda (it)
-                  (git:component :message it))
+                  (co.fwoar.git:component :message it))
                 parents))
     #+END_SRC
 
     #+RESULTS:
-    : ("(bump)
+    : ("feat(docs): add docs
     : ")
 
 *** Show the files in a commit
     - Note taken on [2020-11-15 Sun 01:49] \\
       If the table comes out wrong, =*print-case*= must be =:downcase=
 
-    #+BEGIN_SRC lisp :exports both :results table :hlines yes
-      (git:in-repository "~/quicklisp/local-projects/cl-git")
-      (list* #("Name" "Mode" "Hash")
+    #+BEGIN_SRC lisp :exports both :results table :hlines yes :post proc
+      (co.fwoar.git:in-repository ".")
+      (list* '("Name" "Mode" "Hash")
              'hline
-             (git:git (branch "master")
-                      (component :tree :entries)
-                      (map (juxt (component :name)
-                                 (component :mode)
-                                 (component :hash)))))
+             (co.fwoar.git:git (branch "master")
+                               (component :tree :entries)
+                               (map (juxt (component :name)
+                                          (component :mode)
+                                          (component :hash)))))
     #+END_SRC
 
     #+RESULTS:
@@ -93,12 +93,13 @@
     | .gitignore      | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
     | .projectile     | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
     | LICENSE         | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
-    | README.org      | 100644 | 9889a8a1e253a446de953072db8ee9f13e90b716 |
+    | README.org      | 100644 | a9026cbd36491691fb9e05ea4ee066ca0283a6b7 |
     | branch.lisp     | 100644 | 6ee2b1e254e7895d55ecd534b2fa16267ec14389 |
     | cl-git.asd      | 100644 | 486920e6178e436fa993ce3a2bd23f60827c9fd5 |
     | commit.lisp     | 100644 | d6a83c1a351eb2c0f5315ceddcde37545b7781d6 |
     | delta.lisp      | 100644 | 1417d8b8d172824c38d95791c8b884393db273ae |
     | docker-run      |  40000 | acace4bb63832baa7e69e324e738eda7aae4ac2c |
+    | docs            |  40000 | 696965c69073891cb101697eb7ec97a1bc8a868b |
     | extract.lisp    | 100644 | 4bfb480eb2993cf516fded3adec49483322fdcf4 |
     | git.lisp        | 100644 | bad6f54787369609581669de923afaf378ed4002 |
     | graph.lisp      | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
@@ -116,14 +117,14 @@
     - Note taken on [2020-11-15 Sun 01:49] \\
       If the table comes out wrong, =*print-case*= must be =:downcase=
 
-    #+BEGIN_SRC lisp :exports both :results table :hlines yes
-      (git:with-repository ("~/quicklisp/local-projects/cl-git/")
-        (let* ((branch (git:branch "master"))
-               (tree (git:tree branch))
-               (tree-entries (git:filter-tree "^.....?[.]lisp" tree)))
+    #+BEGIN_SRC lisp :exports both :results table :hlines yes :post proc
+      (co.fwoar.git:with-repository (".")
+        (let* ((branch (co.fwoar.git:branch "master"))
+               (tree (co.fwoar.git:tree branch))
+               (tree-entries (co.fwoar.git:filter-tree "^.....?[.]lisp" tree)))
           (flet ((component (component)
                    (lambda (it)
-                     (git:component component it))))
+                     (co.fwoar.git:component component it))))
             (list* '("Name" "Mode" "Hash")
                    'hline
                    (mapcar (data-lens:juxt (component :name)
@@ -178,3 +179,12 @@
 
 ** TODOs
 *** TODO start implementing Pharo-like git integration (read-only first, commits later)
+
+#+name: proc
+#+begin_src emacs-lisp
+  (mapcar (lambda (it)
+            (if (equal it 'HLINE)
+                'hline
+              it))
+          ,*this*)
+#+end_src

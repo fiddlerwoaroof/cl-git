@@ -1,7 +1,7 @@
 ;;; -*- Mode:Lisp; Syntax:ANSI-Common-Lisp; Package: ASDF-USER -*-
 (in-package :asdf-user)
 
-(defsystem :cl-git
+(defsystem :co.fwoar.cl-git
   :description "A pure-Lisp git implementation"
   :author "Ed L <edward@elangley.org>"
   :license "MIT"
@@ -36,7 +36,7 @@
 
                ;; stable programmer interface
                (:file "porcelain" :depends-on ("package" "git" "commit"))))
-(defsystem :cl-git/tests
+(defsystem :co.fwoar.cl-git/tests
   :description ""
   :author "Ed L <edward@elangley.org>"
   :license "MIT"

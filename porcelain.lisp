@@ -8,33 +8,33 @@
 (defvar *git-encoding* :utf-8
   "The encoding to use when parsing git objects")
 
-(defun git:in-repository (root)
+(defun co.fwoar.git:in-repository (root)
   (setf *git-repository*
         (ensure-repository
          (truename root))))
 
-(defun git:repository ()
+(defun co.fwoar.git:repository ()
   *git-repository*)
 
-(defmacro git:with-repository ((root) &body body)
+(defmacro co.fwoar.git:with-repository ((root) &body body)
   `(let ((*git-repository* (ensure-repository ,root)))
      ,@body))
 
-(defun git:show-repository ()
+(defun co.fwoar.git:show-repository ()
   *git-repository*)
 
 (defun in-git-package (symbol)
   (intern (symbol-name symbol)
-          :git))
+          :co.fwoar.git))
 
 (defun handle-list (_1)
   (case (in-git-package (car _1))
-    (git::unwrap `(uiop:nest (car)
-                             (mapcar ,@(cdr _1))))
+    (co.fwoar.git::unwrap `(uiop:nest (car)
+                                      (mapcar ,@(cdr _1))))
     (t (cons (in-git-package (car _1))
              (cdr _1)))))
 
-(defun git::resolve-refish (it)
+(defun co.fwoar.git::resolve-refish (it)
   (flet ((hash-p (it)
            (and (> (length it) 32)
                 (every (serapeum:op
@@ -50,7 +50,7 @@
          nil))
       ((hash-p it) (ensure-ref it)))))
 
-(defmacro git:git (&rest commands)
+(defmacro co.fwoar.git:git (&rest commands)
   `(uiop:nest ,@(reverse
                  (funcall (data-lens:<>1
                            (data-lens:over (serapeum:op
@@ -59,20 +59,20 @@
                                                (list (handle-list _1)))))
                            (data-lens:transform-head (serapeum:op
                                                        (etypecase _1
-                                                         (string `(git::resolve-refish ,_1))
+                                                         (string `(co.fwoar.git::resolve-refish ,_1))
                                                          (t _1)))))
                           commands))))
 
-(defun git::ensure-ref (it)
+(defun co.fwoar.git::ensure-ref (it)
   (ensure-ref it))
 
-(defun git::decode (it)
+(defun co.fwoar.git::decode (it)
   (babel:octets-to-string it :encoding *git-encoding*))
 
-(defun git::<<= (fun &rest args)
+(defun co.fwoar.git::<<= (fun &rest args)
   (apply #'mapcan fun args))
 
-(defmacro git::map (fun list)
+(defmacro co.fwoar.git::map (fun list)
   (alexandria:once-only (list)
     (alexandria:with-gensyms (it)
       `(mapcar ,(if (consp fun)
@@ -83,7 +83,7 @@
                     `',(in-git-package fun))
                ,list))))
 
-(defmacro git::juxt (&rest args)
+(defmacro co.fwoar.git::juxt (&rest args)
   (let ((funs (butlast args))
         (arg (car (last args))))
     (alexandria:once-only (arg)
@@ -91,7 +91,7 @@
                          `(,@(alexandria:ensure-list f) ,arg))
                        funs)))))
 
-(defmacro git::pipe (&rest funs)
+(defmacro co.fwoar.git::pipe (&rest funs)
   (let ((funs (reverse (butlast funs)))
         (var (car (last funs))))
     `(uiop:nest ,@(mapcar (lambda (it)
@@ -101,28 +101,28 @@
                           funs)
                 ,var)))
 
-(defun git::filter (fun &rest args)
+(defun co.fwoar.git::filter (fun &rest args)
   (apply #'remove-if-not fun args))
 
-(defun git::object (thing)
+(defun co.fwoar.git::object (thing)
   (extract-object thing))
 
-(defun git:show (object)
+(defun co.fwoar.git:show (object)
   (extract-object object))
 
-(defun git:contents (object)
-  (git:show object))
+(defun co.fwoar.git:contents (object)
+  (co.fwoar.git:show object))
 
-(defun git:component (&rest args)
+(defun co.fwoar.git:component (&rest args)
   (let ((component-list (butlast args))
         (target (car (last args))))
     (fwoar.cl-git::component component-list target)))
 
-(defun git:tree (commit-object)
+(defun co.fwoar.git:tree (commit-object)
   (component :tree
              commit-object))
 
-(defun git::filter-tree (name-pattern tree)
+(defun co.fwoar.git::filter-tree (name-pattern tree)
   #+lispworks
   (declare (notinline serapeum:string-prefix-p))
   (let* ((tree-entries (component :entries tree))
@@ -132,7 +132,7 @@
                    tree-entries
                    :key #'te-name)))
 
-(defun git:branch (&optional (branch :master))
+(defun co.fwoar.git:branch (&optional (branch :master))
   #+lispworks
   (declare (notinline serapeum:assocadr))
   (let ((branches (branches *git-repository*)))
@@ -143,16 +143,16 @@
                             branches
                             :test 'equal))))
 
-(defun git:branches ()
+(defun co.fwoar.git:branches ()
   (branches *git-repository*))
 
-(defun git::parents (commit)
+(defun co.fwoar.git::parents (commit)
   (mapcar 'ensure-ref
           (component :parents commit)))
-(defun git:commit-parents (commit)
-  (git::parents commit))
+(defun co.fwoar.git:commit-parents (commit)
+  (co.fwoar.git::parents commit))
 
-(defun git:rev-list (ref-id &optional (limit nil limit-p))
+(defun co.fwoar.git:rev-list (ref-id &optional (limit nil limit-p))
   "Return the commits reachable from the ref."
   (when limit-p
     (rotatef ref-id limit))
@@ -163,7 +163,7 @@
                  accum
                  (destructuring-bind (next . rest) queue
                    (iterate (append rest
-                                    (git::parents next))
+                                    (co.fwoar.git::parents next))
                      (cons next accum)
                      (1+ count))))))
     (iterate (list (ensure-ref ref-id))
