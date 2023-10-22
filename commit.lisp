@@ -1,11 +1,21 @@
 (in-package :fwoar.cl-git)
 
 (defclass git-commit ()
-  ((%metadata :initarg :metadata :reader metadata)
+  ((%hash :initarg :hash :reader hash)
+   (%metadata :initarg :metadata :reader metadata)
    (%data :initarg :data :reader data)))
 
-(defun git-commit (metadata data)
-  (fw.lu:new 'git-commit metadata data))
+(defmethod print-object ((o git-commit) s)
+  (if *print-readably*
+      (format s "#.(git-commit ~<~s~_~s~_~s~:>)"
+              (list (hash o)
+                    (metadata o)
+                    (data o)))
+      (print-unreadable-object (o s :type t :identity t)
+        (format s "~a" (subseq (hash o) 0 6)))))
+
+(defun git-commit (hash metadata data)
+  (fw.lu:new 'git-commit hash metadata data))
 
 (defun parse-commit (commit)
   (destructuring-bind (metadata message)
@@ -15,14 +25,18 @@
             (map 'vector (serapeum:op (partition #\space _))
                  (fwoar.string-utils:split #\newline metadata)))))
 
-(defun make-commit (data)
+(defun make-commit (data hash)
   (multiple-value-bind (message metadata)
       (parse-commit data)
-    (git-commit metadata message)))
+    (git-commit hash metadata message)))
 
-(defmethod -extract-object-of-type ((type (eql :commit)) s repository &key)
-  (make-commit (babel:octets-to-string s :encoding *git-encoding*)))
+(defmethod -extract-object-of-type ((type (eql :commit)) s repository &key hash)
+  (make-commit (babel:octets-to-string s :encoding *git-encoding*)
+               hash))
 
+
+(defmethod component ((component (eql :hash)) (object git-commit))
+  (hash object))
 
 (defmethod component ((component (eql :tree)) (object git-commit))
   (ensure-ref
