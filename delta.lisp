@@ -1,6 +1,6 @@
 (in-package :fwoar.cl-git)
 
-(defclass delta ()
+(defclass delta (git-object)
   ((%repository :initarg :repository :reader repository)
    (%base :initarg :base :reader base)
    (%commands :initarg :commands :reader commands)))

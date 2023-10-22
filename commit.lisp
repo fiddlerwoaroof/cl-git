@@ -1,8 +1,7 @@
 (in-package :fwoar.cl-git)
 
-(defclass git-commit ()
-  ((%hash :initarg :hash :reader hash)
-   (%metadata :initarg :metadata :reader metadata)
+(defclass git-commit (git-object)
+  ((%metadata :initarg :metadata :reader metadata)
    (%data :initarg :data :reader data)))
 
 (defmethod print-object ((o git-commit) s)
@@ -34,9 +33,6 @@
   (make-commit (babel:octets-to-string s :encoding *git-encoding*)
                hash))
 
-
-(defmethod component ((component (eql :hash)) (object git-commit))
-  (hash object))
 
 (defmethod component ((component (eql :tree)) (object git-commit))
   (ensure-ref

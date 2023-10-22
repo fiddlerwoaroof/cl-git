@@ -27,10 +27,16 @@
                          :file object-file))
         (packed-ref repo id))))
 
+(defvar *ref-intern-table*
+  (make-hash-table :test 'equal #+sbcl :weakness #+sbcl :key-and-value))
+
 (defun ensure-ref (thing &optional (repo *git-repository*))
   (typecase thing
     (git-ref thing)
-    (t (ref repo thing))))
+    (t (alexandria:when-let ((maybe-result (ref repo thing)))
+         (alexandria:ensure-gethash (component :hash maybe-result)
+                                    *ref-intern-table*
+                                    maybe-result)))))
 
 (defun ensure-repository (thing)
   (repository thing))

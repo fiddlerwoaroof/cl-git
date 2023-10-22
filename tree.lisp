@@ -6,11 +6,10 @@
 (defun git-tree (entries)
   (fw.lu:new 'git-tree entries))
 
-(defclass tree-entry ()
+(defclass tree-entry (git-object)
   ((%repo :initarg :repo :reader repository)
    (%mode :initarg :mode :reader te-mode)
-   (%name :initarg :name :reader te-name)
-   (%hash :initarg :hash :reader te-hash)))
+   (%name :initarg :name :reader te-name)))
 
 (defun tree-entry (repo name mode hash)
   (fw.lu:new 'tree-entry repo name mode hash))
@@ -65,8 +64,6 @@
   (te-name object))
 (defmethod component ((component (eql :mode)) (object tree-entry))
   (te-mode object))
-(defmethod component ((component (eql :hash)) (object tree-entry))
-  (te-hash object))
 (defmethod component ((component (eql :ref)) (object tree-entry))
   (ref (repository object)
        (te-hash object)))

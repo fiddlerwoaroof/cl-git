@@ -14,7 +14,7 @@
   ())
 
 (defclass git-object ()
-  ())
+  ((%hash :initarg :hash :accessor hash)))
 
 (defgeneric object-type->sym (object-type)
   (:documentation "Canonicalizes different representations of an
@@ -146,3 +146,6 @@
             (serapeum:string-replace (namestring (user-homedir-pathname))
                                      (root-of (ref-repo obj))
                                      "~/"))))
+
+(defmethod component ((component (eql :hash)) (object git-object))
+  (hash object))

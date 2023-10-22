@@ -1,9 +1,15 @@
 (in-package :fwoar.cl-git)
 
-(defclass+ blob ()
+(defclass+ blob (git-object)
   ((%data :reader data :initarg :data)))
 
-(defgeneric -extract-object-of-type (type s repository &key &allow-other-keys)
+(defgeneric -extract-object-of-type (type s repository &key  &allow-other-keys)
+  (:method :around (type s repository &key hash)
+    (let ((result (call-next-method)))
+      (prog1 result
+        (when (typep result 'git-object)
+          (setf (hash result) hash)))))
+
   (:method ((type (eql :blob)) s repository &key)
     (blob s))
 
