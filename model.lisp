@@ -112,10 +112,12 @@
 (defgeneric loose-object (repository id)
   (:method ((repository string) id)
     (when (probe-file (merge-pathnames ".git" repository))
-      (loose-object (repository repository) id)))
+      (loose-object (repository repository)
+                    id)))
   (:method ((repository pathname) id)
     (when (probe-file (merge-pathnames ".git" repository))
-      (loose-object (repository repository) id)))
+      (loose-object (repository repository)
+                    id)))
   (:method ((repository repository) id)
     (car
      (uiop:directory*
@@ -136,9 +138,9 @@
    (%offset :initarg :offset :reader packed-ref-offset)))
 
 (defmethod print-object ((obj git-ref) s)
-  (print-unreadable-object (obj s :type t)
+  (print-unreadable-object (obj s :type t :identity t)
     (format s "~a of ~a"
-            (subseq (ref-hash obj) 0 7)
+            (subseq (ref-hash obj) 0 6)
             (ref-repo obj)
             #+(or)
             (serapeum:string-replace (namestring (user-homedir-pathname))
