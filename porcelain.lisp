@@ -156,15 +156,20 @@
   "Return the commits reachable from the ref."
   (when limit-p
     (rotatef ref-id limit))
-  (labels ((iterate (queue accum &optional (count 0))
-             (if (or (when limit-p
-                       (= limit count))
-                     (null queue))
-                 accum
-                 (destructuring-bind (next . rest) queue
-                   (iterate (append rest
-                                    (co.fwoar.git::parents next))
-                     (cons next accum)
-                     (1+ count))))))
-    (iterate (list (ensure-ref ref-id))
-      ())))
+  (let ((seen (make-hash-table)))
+    (labels ((iterate (queue accum &optional (count 0))
+               (if (or (when limit-p
+                         (= limit count))
+                       (null queue))
+                   accum
+                   (destructuring-bind (next . rest) queue
+                     (let ((parents (co.fwoar.git::parents next)))
+                       (iterate (append rest parents)
+                         (if (gethash next seen)
+                             accum
+                             (progn
+                               (setf (gethash next seen) t)
+                               (cons next accum)))
+                         (1+ count)))))))
+      (iterate (list (ensure-ref ref-id))
+        ()))))
