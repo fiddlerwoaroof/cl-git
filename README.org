@@ -43,7 +43,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : #<LOOSE-REF 63b3f56 of .../u/edwlan/cl-git/>
+    : #<LOOSE-REF c584af of #<GIT-REPOSITORY {7018FB3A73}> {7018FC3873}>
 
 
 *** Show the commit message
@@ -54,7 +54,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : Create CNAME
+    : fix: deduplicate rev-list
 
 *** Show the messages of the commit's parent
 
@@ -68,7 +68,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : ("feat(docs): add docs
+    : ("feat: intern refs
     : ")
 
 *** Show the files in a commit
@@ -87,31 +87,31 @@
     #+END_SRC
 
     #+RESULTS:
-    | Name            |   Mode | Hash                                     |
-    |-----------------+--------+------------------------------------------|
-    | .github         |  40000 | 60d3c5b679a48ee485b1fd3871766c53505b7383 |
-    | .gitignore      | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
-    | .projectile     | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
-    | LICENSE         | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
-    | README.org      | 100644 | a9026cbd36491691fb9e05ea4ee066ca0283a6b7 |
-    | branch.lisp     | 100644 | 6ee2b1e254e7895d55ecd534b2fa16267ec14389 |
-    | cl-git.asd      | 100644 | 486920e6178e436fa993ce3a2bd23f60827c9fd5 |
-    | commit.lisp     | 100644 | d6a83c1a351eb2c0f5315ceddcde37545b7781d6 |
-    | delta.lisp      | 100644 | 1417d8b8d172824c38d95791c8b884393db273ae |
-    | docker-run      |  40000 | acace4bb63832baa7e69e324e738eda7aae4ac2c |
-    | docs            |  40000 | 696965c69073891cb101697eb7ec97a1bc8a868b |
-    | extract.lisp    | 100644 | 4bfb480eb2993cf516fded3adec49483322fdcf4 |
-    | git.lisp        | 100644 | bad6f54787369609581669de923afaf378ed4002 |
-    | graph.lisp      | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
-    | model.lisp      | 100644 | 346fa823d06b6cebead49c7ec37d90b3cc660528 |
-    | package.lisp    | 100644 | 538e7211817953a036f8f913dd4509c8edc6a489 |
-    | porcelain.lisp  | 100644 | 3929d993c8ad4c6c99b4e0ff3b3a54bee7c95fc1 |
-    | protocol.lisp   | 100644 | 01315cf76c90baac4daf5218f50fc76aa8674910 |
-    | repository.lisp | 100644 | af1cc58c12b32770fa63ac29502a446b3b059c90 |
-    | tests           |  40000 | 0a5e860fc174d9c2078d1fc9f1cef01c0f5867d2 |
-    | tree.lisp       | 100644 | 42eceec42eb35d4ee2b739e99d7e1a51f1b9fd35 |
-    | undelta.lisp    | 100644 | ae0a070133d1a14d6e940a0f790f40b37e885b22 |
-    | util.lisp       | 100644 | d75f905d80b97abd329518b7574ef0f2fe1673c8 |
+    | Name                |   Mode | Hash                                     |
+    |---------------------+--------+------------------------------------------|
+    | .github             |  40000 | 60d3c5b679a48ee485b1fd3871766c53505b7383 |
+    | .gitignore          | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
+    | .projectile         | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
+    | LICENSE             | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
+    | README.org          | 100644 | 847df986135838c2689a418b46e1bce4f68cbcca |
+    | branch.lisp         | 100644 | 6ee2b1e254e7895d55ecd534b2fa16267ec14389 |
+    | co.fwoar.cl-git.asd | 100644 | db7a772e92e5cbf052d239a9b55fbcc6fdf40a8c |
+    | commit.lisp         | 100644 | 792127685ce8e1cb09b1db52d44f042ebdeb5ad9 |
+    | delta.lisp          | 100644 | 663107f44ec7c3039f5eebc279005cb1d4d99b43 |
+    | docker-run          |  40000 | acace4bb63832baa7e69e324e738eda7aae4ac2c |
+    | docs                |  40000 | 696965c69073891cb101697eb7ec97a1bc8a868b |
+    | extract.lisp        | 100644 | 1bf48421af67fc6489a1d2e0f6d7d236ff8d2046 |
+    | git.lisp            | 100644 | bad6f54787369609581669de923afaf378ed4002 |
+    | graph.lisp          | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
+    | model.lisp          | 100644 | e54aa6e80730dc390805f55d355bd80256dd7699 |
+    | package.lisp        | 100644 | 519a4f9a0c071a7babd0f29137549bea7dd3e119 |
+    | porcelain.lisp      | 100644 | 00ecaacea7ebcd57746198b248c3a3f5b89f21a5 |
+    | protocol.lisp       | 100644 | a9c317a589516da0a9d88113bb56a28b73f2d41e |
+    | repository.lisp     | 100644 | f367c22c6c7fb59fec1b514f2fe71fe78465e878 |
+    | tests               |  40000 | 0a5e860fc174d9c2078d1fc9f1cef01c0f5867d2 |
+    | tree.lisp           | 100644 | 5de70bbc27e6c0e1c5eda4489ff5f7d1cc7e8221 |
+    | undelta.lisp        | 100644 | ae0a070133d1a14d6e940a0f790f40b37e885b22 |
+    | util.lisp           | 100644 | d75f905d80b97abd329518b7574ef0f2fe1673c8 |
 
 *** Show the files that match a pattern
     - Note taken on [2020-11-15 Sun 01:49] \\
@@ -136,10 +136,10 @@
     #+RESULTS:
     | Name       |   Mode | Hash                                     |
     |------------+--------+------------------------------------------|
-    | delta.lisp | 100644 | 1417d8b8d172824c38d95791c8b884393db273ae |
+    | delta.lisp | 100644 | 663107f44ec7c3039f5eebc279005cb1d4d99b43 |
     | graph.lisp | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
-    | model.lisp | 100644 | 346fa823d06b6cebead49c7ec37d90b3cc660528 |
-    | tree.lisp  | 100644 | 42eceec42eb35d4ee2b739e99d7e1a51f1b9fd35 |
+    | model.lisp | 100644 | e54aa6e80730dc390805f55d355bd80256dd7699 |
+    | tree.lisp  | 100644 | 5de70bbc27e6c0e1c5eda4489ff5f7d1cc7e8221 |
     | util.lisp  | 100644 | d75f905d80b97abd329518b7574ef0f2fe1673c8 |
 
 ** Partially Implemented:
