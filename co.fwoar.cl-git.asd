@@ -36,6 +36,7 @@
 
                ;; stable programmer interface
                (:file "porcelain" :depends-on ("package" "git" "commit"))))
+
 (defsystem :co.fwoar.cl-git/tests
   :description ""
   :author "Ed L <edward@elangley.org>"
@@ -44,7 +45,7 @@
                #:uiop
                #:serapeum
                #:fiveam
-               #:cl-git)
+               #:co.fwoar.cl-git)
   :serial t
   :components ((:module "tests"
                 :components ((:file "tests")

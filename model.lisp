@@ -149,3 +149,5 @@
 
 (defmethod component ((component (eql :hash)) (object git-object))
   (hash object))
+(defmethod component ((component (eql :hash)) (object git-ref))
+  (ref-hash object))

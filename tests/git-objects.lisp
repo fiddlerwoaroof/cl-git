@@ -9,9 +9,11 @@
   :in :fwoar.cl-git)
 (fiveam:in-suite :fwoar.cl-git.git-objects)
 
-(fw.lu:defclass+ fake-ref ()
-  ((%repo :initarg :repo :reader repo)
-   (%hash :initarg :hash :reader hash)))
+(defclass fake-ref (fwoar.cl-git::git-ref)
+  ())
+(defun fake-ref (repo hash)
+  (fwoar.lisputils:new 'fake-ref repo hash))
+
 (defmethod fwoar.cl-git::ref ((repo (eql *fake-repo*)) hash)
   (fake-ref repo hash))
 
@@ -21,8 +23,9 @@
         (object (fwoar.cl-git::extract-loose-object
                  nil
                  (asdf:system-relative-pathname
-                  :cl-git
-                  "tests/sample-git-objects/hello-world-commit.git-obj"))))
+                  :co.fwoar.cl-git
+                  "tests/sample-git-objects/hello-world-commit.git-obj")
+                 (make-instance 'fake-ref :hash "the-hash"))))
     (5am:is (typep object 'fwoar.cl-git::git-commit))
     (5am:is (equal "hello, git!
 "
@@ -36,9 +39,9 @@
     (5am:is (equal ()
                    (fwoar.cl-git:component :parents object)))
     (5am:is (equal "1da546ab4697b719efb62f11fd785d6ad3b226d2"
-                   (hash (fwoar.cl-git:component :tree object))))
+                   (fwoar.cl-git::ref-hash (fwoar.cl-git:component :tree object))))
     (5am:is (equal *fake-repo*
-                   (repo (fwoar.cl-git:component :tree object))))
+                   (fwoar.cl-git::ref-repo (fwoar.cl-git:component :tree object))))
     (5am:is (equal '(("author" "L Edgley <foo@bar.com> 1605513585 -0800")
                      ("committer" "Ed L <el-github@elangley.org> 1605513585 -0800")
                      ("tree" "1da546ab4697b719efb62f11fd785d6ad3b226d2"))
@@ -51,8 +54,9 @@
   (let ((object (fwoar.cl-git::extract-loose-object
                  nil
                  (asdf:system-relative-pathname
-                  :cl-git
-                  "tests/sample-git-objects/hello-world-tree.git-obj"))))
+                  :co.fwoar.cl-git
+                  "tests/sample-git-objects/hello-world-tree.git-obj")
+                 (make-instance 'fake-ref :hash "the-hash"))))
     (5am:is (typep object 'fwoar.cl-git::git-tree))
     (let* ((entries (fwoar.cl-git::entries object))
            (entry (progn (5am:is (= (length entries) 1))
@@ -70,10 +74,10 @@
 (defmethod fwoar.cl-git::pack-files ((repo (eql *fake-repo*)))
   (list
    (fwoar.cl-git::pack (asdf:system-relative-pathname
-                        :cl-git
+                        :co.fwoar.cl-git
                         "tests/sample-git-objects/hello-world-pack.idx")
                        (asdf:system-relative-pathname
-                        :cl-git
+                        :co.fwoar.cl-git
                         "tests/sample-git-objects/hello-world-pack.pack")
                        repo)))
 
@@ -101,9 +105,9 @@
                    (fwoar.cl-git:component :parents object)))
     (let ((fwoar.cl-git::*git-repository* *fake-repo*))
       (5am:is (equal "1da546ab4697b719efb62f11fd785d6ad3b226d2"
-                     (hash (fwoar.cl-git:component :tree object))))
+                     (fwoar.cl-git::ref-hash (fwoar.cl-git:component :tree object))))
       (5am:is (equal *fake-repo*
-                     (repo (fwoar.cl-git:component :tree object)))))
+                     (fwoar.cl-git::ref-repo (fwoar.cl-git:component :tree object)))))
     (5am:is (equal '(("author" "L Edgley <foo@bar.com> 1605513585 -0800")
                      ("committer" "Ed L <el-github@elangley.org> 1605513585 -0800")
                      ("tree" "1da546ab4697b719efb62f11fd785d6ad3b226d2"))

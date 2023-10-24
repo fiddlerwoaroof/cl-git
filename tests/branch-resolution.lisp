@@ -30,9 +30,9 @@
 (fiveam:in-suite :fwoar.cl-git.branch-resolution)
 
 (fiveam:def-test simple ()
-  (5am:is (typep (git:with-repository (:branch-resolution)
-                   (git:repository))
+  (5am:is (typep (co.fwoar.git:with-repository (:branch-resolution)
+                   (co.fwoar.git:repository))
                  'fake-repository))
   (5am:is (equal *expected-branches*
-                 (git:with-repository (:branch-resolution)
-                   (git:git (branches))))))
+                 (co.fwoar.git:with-repository (:branch-resolution)
+                   (co.fwoar.git:git (branches))))))
