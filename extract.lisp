@@ -79,16 +79,21 @@
     (+ offset-offset
        (* 4 obj-number))))
 
+(defun extract-object-at-pos (pack pos ref)
+  (with-open-file (p (pack-file pack) :element-type '(unsigned-byte 8))
+    (file-position p pos)
+    (read-object-from-pack p
+                           (repository pack)
+                           ref)))
+
 (defun extract-object-from-pack (pack obj-number ref)
   (with-open-file (s (index-file pack) :element-type '(unsigned-byte 8))
-    (with-open-file (p (pack-file pack) :element-type '(unsigned-byte 8))
-      (file-position s (pack-offset-for-object (idx-toc s)
-                                               obj-number))
-      (let ((object-offset-in-pack (read-bytes 4 'fwoar.bin-parser:be->int s)))
-        (file-position p object-offset-in-pack)
-        (read-object-from-pack p
-                               (repository pack)
-                               ref)))))
+    (file-position s (pack-offset-for-object (idx-toc s)
+                                             obj-number))
+    (let ((object-offset-in-pack (read-bytes 4 'fwoar.bin-parser:be->int s)))
+      (extract-object-at-pos pack
+                             object-offset-in-pack
+                             ref))))
 
 (defun extract-loose-object (repo file ref)
   (with-open-file (s file :element-type '(unsigned-byte 8))
