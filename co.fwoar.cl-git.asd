@@ -19,6 +19,7 @@
                :serapeum
                :split-sequence
                :uiop)
+  :in-order-to ((test-op (test-op :data-lens/test)))
   :components ((:file "package")
                (:file "util" :depends-on ("package"))
 
