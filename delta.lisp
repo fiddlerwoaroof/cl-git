@@ -5,13 +5,16 @@
    (%base :initarg :base :reader base)
    (%commands :initarg :commands :reader commands)
    (%src-size :initarg :src-size :reader src-size)
-   (%delta-size :initarg :delta-size :reader delta-size)))
+   (%delta-size :initarg :delta-size :reader delta-size))
+  (:documentation
+   "The base type for deltified git objects"))
 
 (defclass+ ofs-delta (delta)
   ())
 
 (defclass+ ref-delta (delta)
-  ())
+  ()
+  (:documentation "TODO: mostly unimplemented/untested"))
 
 (defun make-ofs-delta (base commands repository src-size delta-size)
   (fw.lu:new 'ofs-delta base commands repository src-size delta-size))
@@ -36,19 +39,22 @@
           :unless (zerop (aref bv ix))
             :sum (expt 2 n))))
 
-(defun expand-copy (copy)
-  (destructuring-bind (command layout numbers) copy
-    (let* ((next-idx 0)
-           (parts (map '(vector (unsigned-byte 8))
-                       (lambda (layout-bit)
-                         (if (= layout-bit 1)
-                             (prog1 (elt numbers next-idx)
-                               (incf next-idx))
-                             0))
-                       (reverse layout))))
-      (list command
-            (fwoar.bin-parser:le->int (subseq parts 0 4))
-            (fwoar.bin-parser:le->int (subseq parts 4))))))
+(defun trace-bases (pack delta)
+  (if (typep delta 'delta)
+      (let* ((offset (second (base delta)))
+             (o (extract-object-at-pos pack
+                                       offset
+                                       (make-instance 'git-ref
+                                                      :hash "00000000"
+                                                      :repo nil)))
+             (obj (serapeum:assocdr :object-data o))
+             (raw (serapeum:assocdr :raw-data o)))
+        (if (typep obj 'delta)
+            (apply-commands (trace-bases pack obj)
+                            (commands delta))
+            (apply-commands (trace-bases pack raw)
+                            (commands delta))))
+      delta))
 
 (defun partition-commands (data)
   (let ((idx 0))
@@ -72,10 +78,35 @@
                      (list :add
                            (coerce (loop repeat (bit-vector->int insts)
                                          collect (advance))
-                                   '(vector (unsigned-byte 8))))))))
+                                   '(vector (unsigned-byte 8)))))))
+             (expand-copy (copy)
+               (destructuring-bind (command layout numbers) copy
+                 (let* ((next-idx 0)
+                        (parts (map '(vector (unsigned-byte 8))
+                                    (lambda (layout-bit)
+                                      (if (= layout-bit 1)
+                                          (prog1 (elt numbers next-idx)
+                                            (incf next-idx))
+                                          0))
+                                    (reverse layout))))
+                   (list command
+                         (fwoar.bin-parser:le->int (subseq parts 0 4))
+                         (fwoar.bin-parser:le->int (subseq parts 4)))))))
       (loop while (< idx (length data))
             collect (get-command)))))
 
+(defun apply-commands (base commands)
+  (flexi-streams:with-output-to-sequence (s)
+    (flet ((do-copy (offset cnt)
+             (write-sequence (subseq base offset (+ offset cnt))
+                             s))
+           (do-add (data)
+             (write-sequence data s)))
+      (loop for (command . args) in commands
+            when (eql command :copy) do
+              (apply #'do-copy args)
+            when (eql command :add) do
+              (apply #'do-add args)))))
 
 (defun get-ofs-delta-offset (buf)
   (let* ((idx 0))
