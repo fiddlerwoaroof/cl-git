@@ -155,3 +155,35 @@
                        :fwoar.cl-git.git-objects.pack
                        "4b5fa63702dd96796042e92787f464e28f09f17d")))
                     :encoding :utf-8)))))
+
+
+(defparameter *fake-repo-2* :fwoar.cl-git.git-objects.pack-2)
+(defmethod fwoar.cl-git::ref ((repo (eql *fake-repo-2*)) hash)
+  (fake-ref repo hash))
+(defmethod fwoar.cl-git::pack-files ((repo (eql *fake-repo-2*)))
+  (list
+   (let* ((pack-file (asdf:system-relative-pathname
+                      :co.fwoar.cl-git/tests
+                      "tests/sample-git-objects/pack-a0533639fdee4493fdbfc1b701872ace63b95e5f.pack"))
+          (index-file (asdf:system-relative-pathname
+                       :co.fwoar.cl-git/tests
+                       "tests/sample-git-objects/pack-a0533639fdee4493fdbfc1b701872ace63b95e5f.idx")))
+     (make-instance 'fwoar.cl-git::pack
+                    :repository nil
+                    :index index-file
+                    :pack pack-file))))
+
+(fiveam:def-test pack-files-offsets ()
+
+  (let* ((expectations-file
+           (asdf:system-relative-pathname
+            :co.fwoar.cl-git/tests
+            "tests/sample-git-objects/pack-a0533639fdee4493fdbfc1b701872ace63b95e5f.delta-bases"))
+         (expectations (uiop:read-file-form expectations-file)))
+    (loop for (ref . base-offset) in expectations
+          do (5am:is (equal base-offset
+                            (second
+                             (fwoar.cl-git::base
+                              (fwoar.cl-git::extract-object
+                               (fwoar.cl-git::packed-ref *fake-repo-2* ref)))))))
+    ))

@@ -78,16 +78,18 @@
 
 
 (defun get-ofs-delta-offset (buf)
-  (let ((idx 0))
+  (let* ((idx 0))
     (flet ((advance ()
              (prog1 (elt buf idx)
                (incf idx))))
-      (loop for c = (advance)
-            for ofs = (logand c 127)
-            for morep = (> (logand c 128) 0)
-            while morep
-            finally
-               (return (values (- ofs) idx))))))
+      (loop
+        for c = (advance)
+        for ofs = (logand c 127) then (+ (ash (1+ ofs)
+                                              7)
+                                         (logand c 127))
+        while (> (logand c 128) 0)
+        finally
+           (return (values (- ofs) idx))))))
 
 (defun decode-size (buf)
   (let ((parts ()))
