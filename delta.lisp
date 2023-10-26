@@ -3,7 +3,9 @@
 (defclass delta (git-object)
   ((%repository :initarg :repository :reader repository)
    (%base :initarg :base :reader base)
-   (%commands :initarg :commands :reader commands)))
+   (%commands :initarg :commands :reader commands)
+   (%src-size :initarg :src-size :reader src-size)
+   (%delta-size :initarg :delta-size :reader delta-size)))
 
 (defclass+ ofs-delta (delta)
   ())
@@ -11,8 +13,8 @@
 (defclass+ ref-delta (delta)
   ())
 
-(defun make-ofs-delta (base commands repository)
-  (fw.lu:new 'ofs-delta base commands repository))
+(defun make-ofs-delta (base commands repository src-size delta-size)
+  (fw.lu:new 'ofs-delta base commands repository src-size delta-size))
 (defun make-ref-delta (base commands repository)
   (fw.lu:new 'ofs-delta base commands repository))
 
@@ -35,8 +37,18 @@
             :sum (expt 2 n))))
 
 (defun expand-copy (copy)
-  ;; TODO: implement this
-  copy)
+  (destructuring-bind (command layout numbers) copy
+    (let* ((next-idx 0)
+           (parts (map '(vector (unsigned-byte 8))
+                       (lambda (layout-bit)
+                         (if (= layout-bit 1)
+                             (prog1 (elt numbers next-idx)
+                               (incf next-idx))
+                             0))
+                       (reverse layout))))
+      (list command
+            (fwoar.bin-parser:le->int (subseq parts 0 4))
+            (fwoar.bin-parser:le->int (subseq parts 4))))))
 
 (defun partition-commands (data)
   (let ((idx 0))
@@ -70,45 +82,47 @@
     (flet ((advance ()
              (prog1 (elt buf idx)
                (incf idx))))
-      (let* ((c (advance))
-             (ofs (logand c 127)))
-        (loop
-          do (format t "~&~s ~s ~s" idx c ofs)
-          while (> (logand c 128) 0)
-          do
-             (setf c (advance))
-             (setf ofs (+ (ash (1+ ofs)
-                               7)
-                          (logand c 127))))
-        (values (- ofs) idx)))))
+      (loop for c = (advance)
+            for ofs = (logand c 127)
+            for morep = (> (logand c 128) 0)
+            while morep
+            finally
+               (return (values (- ofs) idx))))))
+
+(defun decode-size (buf)
+  (let ((parts ()))
+    (loop for raw across buf
+          for bits = (int->bit-vector raw)
+          for morep = (= (elt bits 0) 1)
+          do (push (subseq bits 1) parts)
+          while morep)
+    (let ((result (make-array (* 7 (length parts))
+                              :element-type 'bit)))
+      (loop for x from 0 by 7
+            for part in parts
+            do
+               (replace result part :start1 x))
+      (values (bit-vector->int result)
+              (length parts)))))
 
 (defmethod -extract-object-of-type ((type (eql :ofs-delta)) s repository &key offset-from packfile)
   (multiple-value-bind (offset consumed) (get-ofs-delta-offset s)
-    (make-ofs-delta (list packfile
-                          (+ offset-from offset))
-                    (partition-commands (chipz:decompress
-                                         nil
-                                         (chipz:make-dstate 'chipz:zlib)
-                                         (subseq s consumed)))
-                    repository)))
+    (let ((compressed-data (chipz:decompress
+                            nil
+                            (chipz:make-dstate 'chipz:zlib)
+                            (subseq s consumed))))
+      (multiple-value-bind (src-size consumed-1) (decode-size compressed-data)
+        (multiple-value-bind (delta-size consumed-2) (decode-size (subseq compressed-data
+                                                                          consumed-1))
+          (make-ofs-delta (list packfile
+                                (+ offset-from offset))
+                          (partition-commands (subseq compressed-data
+                                                      (+ consumed-1
+                                                         consumed-2)))
+                          repository
+                          src-size
+                          delta-size))))))
 (defmethod -extract-object-of-type ((type (eql :ref-delta)) s repository &key offset-from)
   (make-ref-delta offset-from
                   (partition-commands s)
                   repository))
-
-
-#+(or) #+(or) #+(or)
-
-(defmethod component ((component (eql :tree)) (object git-commit))
-  (ensure-ref
-   (cadr
-    (fw.lu:v-assoc :tree (metadata object)
-                   :test 'string-equal))))
-(defmethod component ((component (eql :parents)) (object git-commit))
-  (coerce (remove-if-not (serapeum:op
-                           (string= "parent" _))
-                         (metadata object)
-                         :key #'car)
-          'list))
-(defmethod component ((component (eql :message)) (object git-commit))
-  (data object))
