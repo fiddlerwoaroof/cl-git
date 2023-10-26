@@ -7,14 +7,15 @@
   :license "MIT"
   :pathname #-fw.dev nil #+fw.dev #p"PROJECTS:cl-git;"
   :depends-on (:alexandria
+               :babel
                :chipz
                :cl-dot
+               :cl-ppcre
                :data-lens
                :data-lens/beta/transducers
+               :flexi-streams
                :fwoar-lisputils
-               :cl-ppcre
                :fwoar-lisputils/bin-parser
-               :babel
                :ironclad
                :serapeum
                :split-sequence
