@@ -1,0 +1,138 @@
+:root {
+    --zenburn-fg-plus-2: #FFFFEF;
+    --zenburn-fg-plus-1: #F5F5D6;
+    --zenburn-fg: #DCDCCC;
+    --zenburn-fg-1: #A6A689;
+    --zenburn-fg-2: #656555;
+    --zenburn-black: #000000;
+    --zenburn-bg-2: #000000;
+    --zenburn-bg-1: #111112;
+    --zenburn-bg-05: #383838;
+    --zenburn-bg: #2A2B2E;
+    --zenburn-bg-plus-05: #494949;
+    --zenburn-bg-plus-1: #4F4F4F;
+    --zenburn-bg-plus-2: #5F5F5F;
+    --zenburn-bg-plus-3: #6F6F6F;
+    --zenburn-red-plus-2: #ECB3B3;
+    --zenburn-red-plus-1: #DCA3A3;
+    --zenburn-red: #CC9393;
+    --zenburn-red-1: #BC8383;
+    --zenburn-red-2: #AC7373;
+    --zenburn-red-3: #9C6363;
+    --zenburn-red-4: #8C5353;
+    --zenburn-red-5: #7C4343;
+    --zenburn-red-6: #6C3333;
+    --zenburn-orange: #DFAF8F;
+    --zenburn-yellow: #F0DFAF;
+    --zenburn-yellow-1: #E0CF9F;
+    --zenburn-yellow-2: #D0BF8F;
+    --zenburn-green-5: #2F4F2F;
+    --zenburn-green-4: #3F5F3F;
+    --zenburn-green-3: #4F6F4F;
+    --zenburn-green-2: #5F7F5F;
+    --zenburn-green-1: #6F8F6F;
+    --zenburn-green: #7F9F7F;
+    --zenburn-green-plus-1: #8FB28F;
+    --zenburn-green-plus-2: #9FC59F;
+    --zenburn-green-plus-3: #AFD8AF;
+    --zenburn-green-plus-4: #BFEBBF;
+    --zenburn-cyan: #93E0E3;
+    --zenburn-blue-plus-3: #BDE0F3;
+    --zenburn-blue-plus-2: #ACE0E3;
+    --zenburn-blue-plus-1: #94BFF3;
+    --zenburn-blue: #8CD0D3;
+    --zenburn-blue-1: #7CB8BB;
+    --zenburn-blue-2: #6CA0A3;
+    --zenburn-blue-3: #5C888B;
+    --zenburn-blue-4: #4C7073;
+    --zenburn-blue-5: #366060;
+    --zenburn-magenta: #DC8CC3;
+}
+
+* {
+    box-sizing: border-box;
+}
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    --background: var(--zenburn-bg);
+    --heading-background: var(--zenburn-bg-1);
+    --foreground: var(--zenburn-fg);
+    --accent: var(--zenburn-green);
+    --accent-1: var(--zenburn-green-1);
+    --accent-2: var(--zenburn-green-2);
+    --accent-3: var(--zenburn-green-3);
+    --accent-4: var(--zenburn-green-4);
+    --accent-5: var(--zenburn-green-5);
+    --link: var(--zenburn-blue);
+    --visited: var(--zenburn-blue-3);
+}
+
+body {
+    background: var(--background);
+    color: var(--foreground);
+}
+h1,h2,h3,h4,h5,h6 {
+    background: var(--heading-background);
+    border-bottom: currentcolor;
+}
+h1 {color: var(--accent);}
+h2 {color: var(--accent-1);}
+h3 {color: var(--accent-2);}
+h4 {color: var(--accent-3);}
+h5 {color: var(--accent-4);}
+h6 {color: var(--accent-5);}
+a {color: var(--link);}
+a:visited {color: var(--visited);}
+
+h1,h2,h3,h4,h5,h6 {
+    padding: 0.5rem 1rem;
+    font-family: sans-serif;
+    font-size: 16px;
+    margin: 0;
+    margin-bottom: 0.5em;
+    border: 0.1em;
+    border-bottom: solid;
+}
+
+body {
+    display: grid;
+    grid-template-areas: 'header header header header header'
+                         'header header header header header'
+                         'toc    main   main   main   main  '
+                         'toc    main   main   main   main  '
+                         'toc    main   main   main   main  '
+                         'footer footer footer footer footer';
+    grid-gap: 0.1rem;
+    min-height: 100vh;
+    width: 100vw;
+}
+
+body > #content {
+    display: contents;
+}
+#content > .title {
+    grid-area: header;
+    border: none;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    padding: 0;
+}
+#content > #table-of-contents {
+    grid-area: toc;
+}
+#content > .outline-2 {
+    grid-area:  span 4;
+}
+body > #postamble {
+    grid-area: footer;
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25em 0.5em;
+}
