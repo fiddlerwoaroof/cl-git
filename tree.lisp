@@ -20,11 +20,11 @@
               'tree-entry
               (te-name o)
               (te-mode o)
-              (te-hash o))
+              (hash o))
       (print-unreadable-object (o s :type t :identity t)
         (format s "(~a: ~a)"
                 (te-name o)
-                (subseq (te-hash o) 0 7)))))
+                (subseq (hash o) 0 7)))))
 
 (defun parse-tree-entry (data)
   (values-list (partition 0 data :with-offset 20)))
@@ -66,4 +66,4 @@
   (te-mode object))
 (defmethod component ((component (eql :ref)) (object tree-entry))
   (ref (repository object)
-       (te-hash object)))
+       (hash object)))

@@ -4,6 +4,12 @@
   ((%metadata :initarg :metadata :reader metadata)
    (%data :initarg :data :reader data)))
 
+(defun git-commit (hash metadata data)
+  (fw.lu:new 'git-commit hash metadata data))
+
+(defun clamp-string (s len)
+  (subseq s 0 (min len (length s))))
+
 (defmethod print-object ((o git-commit) s)
   (if *print-readably*
       (format s "#.(git-commit ~<~s~_~s~_~s~:>)"
@@ -11,10 +17,7 @@
                     (metadata o)
                     (data o)))
       (print-unreadable-object (o s :type t :identity t)
-        (format s "~a" (subseq (hash o) 0 6)))))
-
-(defun git-commit (hash metadata data)
-  (fw.lu:new 'git-commit hash metadata data))
+        (format s "~a" (format nil "~7,1,1,'x@a" (clamp-string (hash o) 7))))))
 
 (defun parse-commit (commit)
   (destructuring-bind (metadata message)

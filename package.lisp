@@ -7,6 +7,11 @@
    #:repository
    #:component))
 
+(defpackage :fwoar.cl-git.types
+  (:use :cl )
+  (:export
+   #:octet))
+
 (defpackage :cl-git-user
   (:use :cl :fwoar.cl-git))
 

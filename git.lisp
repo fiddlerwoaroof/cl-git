@@ -1,26 +1,21 @@
 (in-package :fwoar.cl-git)
 
-(defun seek-to-object-in-pack (idx-stream pack-stream obj-number)
-  (let* ((toc (idx-toc idx-stream))
+(defmacro with-pack-streams ((idx-sym pack-sym) pack &body body)
+  (alexandria:once-only (pack)
+    `(with-open-file (,idx-sym (index-file ,pack) :element-type 'fwoar.cl-git.types:octet)
+       (with-open-file (,pack-sym (pack-file ,pack) :element-type 'fwoar.cl-git.types:octet)
+         ,@body))))
+
+(defun seek-to-object-in-pack (pack idx-stream pack-stream obj-number)
+  (let* ((toc (idx-toc pack))
          (offset-offset (getf toc :4-byte-offsets)))
     (file-position idx-stream (+ offset-offset (* 4 obj-number)))
     (let ((object-offset-in-pack (read-bytes 4 'fwoar.bin-parser:be->int idx-stream)))
       (file-position pack-stream object-offset-in-pack))))
 
-(deftype octet ()
-  '(unsigned-byte 8))
-
-(defmacro with-open-files* ((&rest bindings) &body body)
-  `(uiop:nest ,@(mapcar (serapeum:op
-                          `(with-open-file ,_1))
-                        bindings)
-              (progn
-                ,@body)))
-
 (defun extract-object-metadata-from-pack (pack obj-number)
-  (with-open-files* ((s (index-file pack) :element-type 'octet)
-                     (p (pack-file pack) :element-type 'octet))
-    (seek-to-object-in-pack s p obj-number)
+  (with-pack-streams (s p) pack
+    (seek-to-object-in-pack pack s p obj-number)
     (read-object-metadata-from-pack p)))
 
 (defun turn-read-object-to-string (object)
@@ -67,38 +62,40 @@
   (fwoar.bin-parser:extract '((offset 4 fwoar.bin-parser:be->int))
                             s))
 
-(defun idx-toc (idx-stream)
-  (let* ((object-count (progn (file-position idx-stream 1028)
-                              (let ((buf (make-array 4)))
-                                (read-sequence buf idx-stream)
-                                (fwoar.bin-parser:be->int buf))))
-         (signature 0)
-         (version 4)
-         (fanout 8)
-         (shas (+ fanout
-                  #.(* 4 256)))
-         (packed-crcs (+ shas
-                         (* 20 object-count)))
-         (4-byte-offsets (+ packed-crcs
-                            (* 4 object-count)))
-         (8-byte-offsets-pro (+ 4-byte-offsets
-                                (* object-count 4)))
-         (pack-sha (- (file-length idx-stream)
-                      40))
-         (8-byte-offsets (when (/= 8-byte-offsets-pro pack-sha)
-                           8-byte-offsets-pro))
-         (idx-sha (- (file-length idx-stream)
-                     20)))
-    (values (sym->plist signature
-                        version
-                        fanout
-                        shas
-                        packed-crcs
-                        4-byte-offsets
-                        8-byte-offsets
-                        pack-sha
-                        idx-sha)
-            object-count)))
+(defgeneric idx-toc (pack)
+  (:method ((pack pack))
+    (with-pack-streams (idx-stream _) pack
+      (let* ((object-count (progn (file-position idx-stream 1028)
+                                  (let ((buf (make-array 4)))
+                                    (read-sequence buf idx-stream)
+                                    (fwoar.bin-parser:be->int buf))))
+             (signature 0)
+             (version 4)
+             (fanout 8)
+             (shas (+ fanout
+                      #.(* 4 256)))
+             (packed-crcs (+ shas
+                             (* 20 object-count)))
+             (4-byte-offsets (+ packed-crcs
+                                (* 4 object-count)))
+             (8-byte-offsets-pro (+ 4-byte-offsets
+                                    (* object-count 4)))
+             (pack-sha (- (file-length idx-stream)
+                          40))
+             (8-byte-offsets (when (/= 8-byte-offsets-pro pack-sha)
+                               8-byte-offsets-pro))
+             (idx-sha (- (file-length idx-stream)
+                         20)))
+        (values (sym->plist signature
+                            version
+                            fanout
+                            shas
+                            packed-crcs
+                            4-byte-offsets
+                            8-byte-offsets
+                            pack-sha
+                            idx-sha)
+                object-count)))))
 
 (defun collect-data (idx-toc s num)
   (let ((sha-idx (getf idx-toc :shas))
@@ -125,15 +122,16 @@
     (values (cons :type type)
             (cons :decompressed-size size))))
 
-(defun get-first-commits-from-pack (idx pack n)
-  (let ((toc (idx-toc idx))
+(defun get-first-commits-from-pack (pack n)
+  (let ((toc (idx-toc pack))
         (result ()))
-    (dotimes (i n (reverse result))
-      (multiple-value-bind (_ sha __ offset) (collect-data toc idx i)
-        (declare (ignore _ __))
-        (file-position pack offset)
-        (push `((:sha . ,sha)
-                ,@(multiple-value-list
-                   (read-object-metadata-from-pack pack))
-                (:offset . ,offset))
-              result)))))
+    (with-pack-streams (idx pack-s) pack
+      (dotimes (i n (reverse result))
+        (multiple-value-bind (_ sha __ offset) (collect-data toc idx i)
+          (declare (ignore _ __))
+          (file-position pack-s offset)
+          (push `((:sha . ,sha)
+                  ,@(multiple-value-list
+                     (read-object-metadata-from-pack pack-s))
+                  (:offset . ,offset))
+                result))))))

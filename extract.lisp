@@ -25,11 +25,11 @@
                (find-sha-between-terms toc s (1+ mid) end sha))
               (t (values mid sha-at-mid)))))))
 
-(defun find-pack-containing (pack-file id)
+(defun find-sha-in-pack (pack-file id)
   (with-open-file (s (index-file pack-file)
                      :element-type '(unsigned-byte 8))
     (let ((binary-sha (ironclad:hex-string-to-byte-array id))
-          (toc (idx-toc s)))
+          (toc (idx-toc pack-file)))
       (multiple-value-bind (_ end) (edges-in-fanout toc s binary-sha)
         (declare (ignore _))
         (multiple-value-bind (midpoint sha)
@@ -41,7 +41,7 @@
 
 (defun find-object-in-pack-files (repo id)
   (dolist (pack-file (pack-files repo))
-    (multiple-value-bind (pack mid sha) (find-pack-containing pack-file id)
+    (multiple-value-bind (pack mid sha) (find-sha-in-pack pack-file id)
       (when pack
         (return-from find-object-in-pack-files
           (values pack mid sha))))))
@@ -86,14 +86,18 @@
                            (repository pack)
                            ref)))
 
+(defun read-4-byte-offset (pack obj-number)
+  (with-pack-streams (s _) pack
+    (file-position s
+                   (pack-offset-for-object (idx-toc pack)
+                                           obj-number))
+    (read-bytes 4 'fwoar.bin-parser:be->int s)))
+
 (defun extract-object-from-pack (pack obj-number ref)
-  (with-open-file (s (index-file pack) :element-type '(unsigned-byte 8))
-    (file-position s (pack-offset-for-object (idx-toc s)
-                                             obj-number))
-    (let ((object-offset-in-pack (read-bytes 4 'fwoar.bin-parser:be->int s)))
-      (extract-object-at-pos pack
-                             object-offset-in-pack
-                             ref))))
+  (let ((object-offset-in-pack (read-4-byte-offset pack obj-number)))
+    (extract-object-at-pos pack
+                           object-offset-in-pack
+                           ref)))
 
 (defun extract-loose-object (repo file ref)
   (with-open-file (s file :element-type '(unsigned-byte 8))

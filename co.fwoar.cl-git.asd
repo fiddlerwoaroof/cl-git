@@ -20,9 +20,10 @@
                :serapeum
                :split-sequence
                :uiop)
-  :in-order-to ((test-op (test-op :data-lens/test)))
+  :in-order-to ((test-op (test-op :co.fwoar.cl-git/tests)))
   :components ((:file "package")
-               (:file "util" :depends-on ("package"))
+               (:file "types" :depends-on ("package"))
+               (:file "util" :depends-on ("types" "package"))
 
                ;; data model
                (:file "model" :depends-on ("package"))
@@ -34,7 +35,7 @@
 
                (:file "extract" :depends-on ("package" "protocol" "commit" "tree" "delta"))
                (:file "branch" :depends-on ("package" "extract"))
-               (:file "git" :depends-on ("package" "util" "model" "branch"))
+               (:file "git" :depends-on ("package" "types" "util" "model" "branch"))
 
                ;; stable programmer interface
                (:file "porcelain" :depends-on ("package" "git" "commit"))))

@@ -66,7 +66,7 @@
                  'batch-20))
 
 (defun read-bytes (count format stream)
-  (let ((seq (make-array count :element-type 'serapeum:octet)))
+  (let ((seq (make-array count :element-type 'fwoar.cl-git.types:octet)))
     (read-sequence seq stream)
     (funcall format
              seq)))
@@ -86,6 +86,9 @@
               (list type
                     (parse-integer length))))))
 
-(defun behead (data)
-  (elt (partition 0 data)
-       1))
+(defmacro with-open-files* ((&rest bindings) &body body)
+  `(uiop:nest ,@(mapcar (serapeum:op
+                          `(with-open-file ,_1))
+                        bindings)
+              (progn
+                ,@body)))
