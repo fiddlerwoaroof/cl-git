@@ -18,7 +18,7 @@
 
   To run the tests in a clean environment, you can do (this will eventually be a Github Action):
 
-  #+BEGIN_SRC sh
+  #+BEGIN_SRC sh :noeval
     docker run \
       -v $PWD/docker-run:/code fiddlerwoaroof/sbcl-static:latest \
       --load /code/main.lisp
@@ -26,7 +26,7 @@
 
 ** Installation
 
-   #+BEGIN_SRC sh
+   #+BEGIN_SRC sh :noeval
      % git clone https://github.com/fiddlerwoaroof/fwoar.lisputils.git "$HOME/quicklisp/local-projects/fwoar-lisputils"
      % git clone https://github.com/fiddlerwoaroof/cl-git.git "$HOME/quicklisp/local-projects/cl-git"
      % sbcl --load "$HOME/quicklisp/setup.lisp"
@@ -43,7 +43,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : #<LOOSE-REF 6df34e of #<GIT-REPOSITORY {70070BD663}> {700777A1C3}>
+    : #<LOOSE-REF b2b470 of #<GIT-REPOSITORY {7012363393}> {7012373413}>
 
 
 *** Show the commit message
@@ -54,7 +54,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : feat: finish delta handling
+    : chore: update README.org
 
 *** Show the messages of the commit's parent
 
@@ -68,14 +68,14 @@
     #+END_SRC
 
     #+RESULTS:
-    : ("refactor: use the pack CLOS object more
+    : ("feat: finish delta handling
     : ")
 
 *** Show the files in a commit
     - Note taken on [2020-11-15 Sun 01:49] \\
       If the table comes out wrong, =*print-case*= must be =:downcase=
 
-    #+BEGIN_SRC lisp :exports both :results table :hlines yes :post proc
+    #+BEGIN_SRC lisp :exports both :results table :hlines yes :post proc(data=*this*)
       (co.fwoar.git:in-repository ".")
       (list* '("Name" "Mode" "Hash")
              'hline
@@ -93,7 +93,7 @@
     | .gitignore          | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
     | .projectile         | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
     | LICENSE             | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
-    | README.org          | 100644 | 30c30131c80ea4cf6ebe1882dc195f841264f67f |
+    | README.org          | 100644 | 30c1be9ff875959c1d00d266d380d2792267177c |
     | branch.lisp         | 100644 | 6ee2b1e254e7895d55ecd534b2fa16267ec14389 |
     | co.fwoar.cl-git.asd | 100644 | b46a0006889e11b609a3712e3580056613e29adc |
     | commit.lisp         | 100644 | 01a443c09232db495b1babfeef98e708a0d3e0b5 |
@@ -118,7 +118,7 @@
     - Note taken on [2020-11-15 Sun 01:49] \\
       If the table comes out wrong, =*print-case*= must be =:downcase=
 
-    #+BEGIN_SRC lisp :exports both :results table :hlines yes :post proc
+    #+BEGIN_SRC lisp :exports both :results table :hlines yes :post proc(data=*this*)
       (co.fwoar.git:with-repository (".")
         (let* ((branch (co.fwoar.git:branch "master"))
                (tree (co.fwoar.git:tree branch))
@@ -157,7 +157,7 @@
 
     A workaround for the moment is to manually unpack the pack files:
 
-    #+BEGIN_SRC sh
+    #+BEGIN_SRC sh :noeval
       mkdir tmp
       mv .git/objects/pack/* tmp
       for pack in tmp/*.pack; do
@@ -167,7 +167,7 @@
 
     Or, you can undeltify the packs by, first unpacking the packfile as above and then doing:
 
-    #+BEGIN_SRC sh
+    #+BEGIN_SRC sh :noeval
       git repack --window=0
     #+END_SRC
 
@@ -183,10 +183,12 @@
 *** TODO start implementing Pharo-like git integration (read-only first, commits later)
 
 #+name: proc
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :var data=()
   (mapcar (lambda (it)
             (if (equal it 'HLINE)
                 'hline
               it))
-          ,*this*)
+          data)
 #+end_src
+
+#+RESULTS: proc
