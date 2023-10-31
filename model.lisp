@@ -98,6 +98,12 @@
 (defun pack (index pack repository)
   (fw.lu:new 'pack index pack repository))
 
+(defmacro with-pack-streams ((idx-sym pack-sym) pack &body body)
+  (alexandria:once-only (pack)
+    `(with-open-file (,idx-sym (index-file ,pack) :element-type 'fwoar.cl-git.types:octet)
+       (with-open-file (,pack-sym (pack-file ,pack) :element-type 'fwoar.cl-git.types:octet)
+         ,@body))))
+
 (defgeneric pack-files (repo)
   (:method ((repo git-repository))
     (mapcar (serapeum:op

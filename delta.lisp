@@ -40,6 +40,26 @@
             :sum (expt 2 n))))
 
 (defun trace-bases (pack delta)
+  (assert (typep delta 'delta))
+  (let* ((offset (second (base delta)))
+         (o (extract-object-at-pos pack
+                                   offset
+                                   (make-instance 'git-ref
+                                                  :hash "00000000"
+                                                  :repo nil)))
+         (obj (serapeum:assocdr :object-data o))
+         (raw (serapeum:assocdr :raw-data o)))
+    (if (typep obj 'delta)
+        (let ((next (trace-bases pack obj)))
+          (length next)
+          (apply-commands next
+                          (commands delta)))
+        (let ((base (apply-commands raw
+                                    (commands delta))))
+          (length base)
+          base))))
+
+(defun get-bases (pack delta)
   (if (typep delta 'delta)
       (let* ((offset (second (base delta)))
              (o (extract-object-at-pos pack
@@ -47,14 +67,9 @@
                                        (make-instance 'git-ref
                                                       :hash "00000000"
                                                       :repo nil)))
-             (obj (serapeum:assocdr :object-data o))
-             (raw (serapeum:assocdr :raw-data o)))
-        (if (typep obj 'delta)
-            (apply-commands (trace-bases pack obj)
-                            (commands delta))
-            (apply-commands (trace-bases pack raw)
-                            (commands delta))))
-      delta))
+             (obj (serapeum:assocdr :object-data o)))
+        (cons delta (get-bases pack obj)))
+      (list delta)))
 
 (defun partition-commands (data)
   (let ((idx 0))
@@ -98,15 +113,32 @@
 (defun apply-commands (base commands)
   (flexi-streams:with-output-to-sequence (s)
     (flet ((do-copy (offset cnt)
+             #+(or)
+             (format t "DOING :COPY ~d ~d~%" offset cnt)
              (write-sequence (subseq base offset (+ offset cnt))
                              s))
            (do-add (data)
+             #+(or)
+             (format t "DOING :ADD ~d~%" (length data))
              (write-sequence data s)))
       (loop for (command . args) in commands
             when (eql command :copy) do
               (apply #'do-copy args)
             when (eql command :add) do
               (apply #'do-add args)))))
+
+(defun get-ofs-delta-offset-streaming (buf)
+  (let* ((idx 0))
+    (flet ((advance ()
+             (read-byte buf)))
+      (loop
+        for c = (advance)
+        for ofs = (logand c 127) then (+ (ash (1+ ofs)
+                                              7)
+                                         (logand c 127))
+        while (> (logand c 128) 0)
+        finally
+           (return (values (- ofs) idx))))))
 
 (defun get-ofs-delta-offset (buf)
   (let* ((idx 0))
@@ -138,23 +170,19 @@
       (values (bit-vector->int result)
               (length parts)))))
 
-(defmethod -extract-object-of-type ((type (eql :ofs-delta)) s repository &key offset-from packfile)
-  (multiple-value-bind (offset consumed) (get-ofs-delta-offset s)
-    (let ((compressed-data (chipz:decompress
-                            nil
-                            (chipz:make-dstate 'chipz:zlib)
-                            (subseq s consumed))))
-      (multiple-value-bind (src-size consumed-1) (decode-size compressed-data)
-        (multiple-value-bind (delta-size consumed-2) (decode-size (subseq compressed-data
-                                                                          consumed-1))
-          (make-ofs-delta (list packfile
-                                (+ offset-from offset))
-                          (partition-commands (subseq compressed-data
-                                                      (+ consumed-1
-                                                         consumed-2)))
-                          repository
-                          src-size
-                          delta-size))))))
+(defmethod -extract-object-of-type ((type (eql :ofs-delta)) s repository &key offset-from packfile base)
+  (multiple-value-bind (src-size consumed-1) (decode-size s)
+    (multiple-value-bind (delta-size consumed-2) (decode-size (subseq s
+                                                                      consumed-1))
+      (make-ofs-delta (list packfile
+                            (+ offset-from base))
+                      (partition-commands (subseq s
+                                                  (+ consumed-1
+                                                     consumed-2)))
+                      repository
+                      src-size
+                      delta-size))))
+
 (defmethod -extract-object-of-type ((type (eql :ref-delta)) s repository &key offset-from)
   (make-ref-delta offset-from
                   (partition-commands s)

@@ -1,17 +1,12 @@
 (in-package :fwoar.cl-git)
 
-(defmacro with-pack-streams ((idx-sym pack-sym) pack &body body)
-  (alexandria:once-only (pack)
-    `(with-open-file (,idx-sym (index-file ,pack) :element-type 'fwoar.cl-git.types:octet)
-       (with-open-file (,pack-sym (pack-file ,pack) :element-type 'fwoar.cl-git.types:octet)
-         ,@body))))
-
 (defun seek-to-object-in-pack (pack idx-stream pack-stream obj-number)
   (let* ((toc (idx-toc pack))
          (offset-offset (getf toc :4-byte-offsets)))
     (file-position idx-stream (+ offset-offset (* 4 obj-number)))
     (let ((object-offset-in-pack (read-bytes 4 'fwoar.bin-parser:be->int idx-stream)))
-      (file-position pack-stream object-offset-in-pack))))
+      (values (file-position pack-stream object-offset-in-pack)
+              object-offset-in-pack))))
 
 (defun extract-object-metadata-from-pack (pack obj-number)
   (with-pack-streams (s p) pack
@@ -32,10 +27,12 @@
           'vector))
 
 (defun get-object-size (bytes)
-  (let ((first (elt bytes 0))
-        (rest (subseq bytes 1)))
-    (logior (ash (fwoar.bin-parser:be->int rest) 4)
-            (logand first 15))))
+  (loop for c across bytes
+        for next = (logand c 15) then (logand c #x7f)
+        for shift = 0 then (if (= shift 0) 4 (+ shift 7))
+        for size = next then (+ size (ash next shift))
+        while (> (logand c #x80) 0)
+        finally (return size)))
 
 (defun get-object-type (bytes)
   (let ((first (elt bytes 0)))

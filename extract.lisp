@@ -46,23 +46,62 @@
         (return-from find-object-in-pack-files
           (values pack mid sha))))))
 
+(defun raw-object-for-ref (packed-ref)
+  (let ((pack (packed-ref-pack packed-ref)))
+    (with-pack-streams (i p) pack
+      (file-position p (read-4-byte-offset pack (packed-ref-offset packed-ref)))
+      (get-object-from-pack p))))
+
+(defun get-object-from-pack (s)
+  (let* ((metadata (fwoar.bin-parser:extract-high s))
+         (type (object-type->sym (get-object-type metadata)))
+         (size (get-object-size metadata)))
+    (case type
+      (:ref-delta (error ":ref-delta not implemented yet"))
+      (:ofs-delta (get-ofs-delta-offset-streaming s)))
+    (let ((decompressed (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
+      (values (concatenate
+               '(vector fwoar.cl-git.types:octet)
+               (ecase type
+                 (:commit #.(babel:string-to-octets "commit" :encoding :ascii))
+                 (:blob #.(babel:string-to-octets "blob" :encoding :ascii))
+                 (:tree #.(babel:string-to-octets "tree" :encoding :ascii)))
+               #(32)
+               (babel:string-to-octets (prin1-to-string size ):encoding :ascii)
+               #(0)
+               decompressed)
+              size
+              (length decompressed)))))
+
+(defun get-ofs-delta-offset-streaming (buf)
+  (let* ((idx 0))
+    (flet ((advance ()
+             (read-byte buf)))
+      (loop
+        for c = (advance)
+        for ofs = (logand c 127) then (+ (ash (1+ ofs)
+                                              7)
+                                         (logand c 127))
+        while (> (logand c 128) 0)
+        finally
+           (return (values (- ofs) idx))))))
+
 (defun read-object-from-pack (s repository ref)
   (let* ((pos (file-position s))
          (metadata (fwoar.bin-parser:extract-high s))
          (type (object-type->sym (get-object-type metadata)))
          (size (get-object-size metadata))
-         (decompressed (if (member type '(:ofs-delta :ref-delta))
-                           (let ((buffer (make-array size :element-type '(unsigned-byte 8))))
-                             (read-sequence buffer s)
-                             buffer)
-                           (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s)))
-         (object-data (extract-object-of-type type decompressed repository pos (pathname s) ref)))
+         (delta-base (case type
+                       (:ref-delta (error ":ref-delta not implemented yet"))
+                       (:ofs-delta (get-ofs-delta-offset-streaming s))))
+         (decompressed (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s))
+         (object-data (extract-object-of-type type decompressed repository pos (pathname s) ref delta-base)))
     (list (cons :type (object-type->sym type))
           (cons :decompressed-size size)
           (cons :object-data object-data)
           (cons :raw-data decompressed))))
 
-(defun extract-object-of-type (type s repository pos packfile ref)
+(defun extract-object-of-type (type s repository pos packfile ref delta-base)
   (with-simple-restart (continue "Skip object of type ~s at position ~d"
                                  type
                                  pos)
@@ -71,7 +110,8 @@
                              repository
                              :offset-from pos
                              :packfile packfile
-                             :hash (ref-hash ref))))
+                             :hash (ref-hash ref)
+                             :base delta-base)))
 
 (defun pack-offset-for-object (index-file obj-number)
   (let ((offset-offset (getf index-file
@@ -111,7 +151,8 @@
                                 repo
                                 0
                                 nil
-                                ref)))))
+                                ref
+                                nil)))))
 
 (defgeneric extract-object (object)
   (:method ((object loose-ref))
