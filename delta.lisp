@@ -39,6 +39,12 @@
           :unless (zerop (aref bv ix))
             :sum (expt 2 n))))
 
+(defun obj-to-type (obj)
+  (etypecase obj
+    (git-commit :commit)
+    (git-tree :tree)
+    (blob :blob)))
+
 (defun trace-bases (pack delta)
   (assert (typep delta 'delta))
   (let* ((offset (second (base delta)))
@@ -50,14 +56,25 @@
          (obj (serapeum:assocdr :object-data o))
          (raw (serapeum:assocdr :raw-data o)))
     (if (typep obj 'delta)
-        (let ((next (trace-bases pack obj)))
-          (length next)
-          (apply-commands next
-                          (commands delta)))
+        (multiple-value-bind (next base-type) (trace-bases pack obj)
+          (values (apply-commands next
+                                  (commands delta))
+                  base-type))
         (let ((base (apply-commands raw
                                     (commands delta))))
           (length base)
-          base))))
+          (values base
+                  (obj-to-type obj))))))
+
+(defun resolve-delta (ref maybe-delta)
+  (typecase maybe-delta
+    (delta (multiple-value-bind (raw-data type) (trace-bases (packed-ref-pack ref)
+                                                             maybe-delta)
+             (-extract-object-of-type type
+                                      raw-data
+                                      (ref-repo ref)
+                                      :hash (ref-hash ref))))
+    (t maybe-delta)))
 
 (defun get-bases (pack delta)
   (if (typep delta 'delta)

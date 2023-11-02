@@ -160,7 +160,8 @@
                           (loose-ref-file object)
                           object))
   (:method ((object packed-ref))
-    (data-lens.lenses:view *object-data-lens*
-                           (extract-object-from-pack (packed-ref-pack object)
-                                                     (packed-ref-offset object)
-                                                     object))))
+    (resolve-delta object
+                   (data-lens.lenses:view *object-data-lens*
+                                          (extract-object-from-pack (packed-ref-pack object)
+                                                                    (packed-ref-offset object)
+                                                                    object)))))
