@@ -81,6 +81,8 @@
 
 (defgeneric repository (object)
   (:documentation "get the repository for an object")
+  (:method ((root repository))
+    root)
   (:method ((root pathname))
     (resolve-repository root))
   (:method ((root string))
