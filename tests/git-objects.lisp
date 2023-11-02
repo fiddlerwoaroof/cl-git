@@ -288,7 +288,7 @@
                     (asdf:system-relative-pathname
                      :co.fwoar.cl-git/tests
                      (format nil "tests/sample-git-objects/blob-~a-fixture"
-                             (subseq ref 0 7))))
+                             (subseq ref 0 8))))
                   (expectations
                     (alexandria:read-file-into-byte-vector expectations-file)))
              (5am:is

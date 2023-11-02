@@ -24,7 +24,7 @@
       (print-unreadable-object (o s :type t :identity t)
         (format s "(~a: ~a)"
                 (te-name o)
-                (subseq (hash o) 0 7)))))
+                (subseq (hash o) 0 8)))))
 
 (defun parse-tree-entry (data)
   (values-list (partition 0 data :with-offset 20)))
