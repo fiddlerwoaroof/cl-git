@@ -43,7 +43,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : #<LOOSE-REF b2b470 of #<GIT-REPOSITORY {7012363393}> {7012373413}>
+    : #<FWOAR.CL-GIT::LOOSE-REF f5f888 of #<GIT-REPOSITORY {700E286593}> {700E298AA3}>
 
 
 *** Show the commit message
@@ -54,7 +54,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : chore: update README.org
+    : feat: repository generic function turns a repository into itself
 
 *** Show the messages of the commit's parent
 
@@ -68,7 +68,7 @@
     #+END_SRC
 
     #+RESULTS:
-    : ("feat: finish delta handling
+    : ("feat: fix graphing
     : ")
 
 *** Show the files in a commit
@@ -93,23 +93,23 @@
     | .gitignore          | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
     | .projectile         | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
     | LICENSE             | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
-    | README.org          | 100644 | 30c1be9ff875959c1d00d266d380d2792267177c |
+    | README.org          | 100644 | 228549f2ddd3fff60fa45ca13c4dd1d84476ae0e |
     | branch.lisp         | 100644 | 6ee2b1e254e7895d55ecd534b2fa16267ec14389 |
     | co.fwoar.cl-git.asd | 100644 | b46a0006889e11b609a3712e3580056613e29adc |
     | commit.lisp         | 100644 | 01a443c09232db495b1babfeef98e708a0d3e0b5 |
     | delta.lisp          | 100644 | 1e6be7f65fa732646316d72a9a725c0145a84758 |
     | docker-run          |  40000 | 4703dc01430d67c5d60f00ad412fddfa22f60764 |
-    | docs                |  40000 | 696965c69073891cb101697eb7ec97a1bc8a868b |
+    | docs                |  40000 | 9fe62496fc4ab6debd3c5e1b26f844b5566c36d5 |
     | extract.lisp        | 100644 | c3acabc2c2b7ec9427ccf9a96bce582c52f985cd |
     | git.lisp            | 100644 | b28579d23e87866f05635b666074e445ba26883f |
-    | graph.lisp          | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
-    | model.lisp          | 100644 | 4ea44c169c65dde7760fe14a39e187439e3a5520 |
+    | graph.lisp          | 100644 | 513606d9eb9eb9a5a3891d7307cb071034d84b59 |
+    | model.lisp          | 100644 | f305b81a1781579c5570d5bc5209048a0e3fe9dc |
     | package.lisp        | 100644 | c532eeeeca12e48e02999ce0ffcbd0bba8768867 |
     | porcelain.lisp      | 100644 | 00ecaacea7ebcd57746198b248c3a3f5b89f21a5 |
     | protocol.lisp       | 100644 | a9c317a589516da0a9d88113bb56a28b73f2d41e |
     | repository.lisp     | 100644 | f367c22c6c7fb59fec1b514f2fe71fe78465e878 |
-    | tests               |  40000 | 2119a1226491aad571ad97404b61b7fdd096c234 |
-    | tree.lisp           | 100644 | 74b8aa5ffc736eadf47bcf442f72963af133119b |
+    | tests               |  40000 | 5d7ec1c0804dc910ddd9b42c5e53552034aaccac |
+    | tree.lisp           | 100644 | c798b0c4d0b5f552548bac98f44b5b5c19334e66 |
     | types.lisp          | 100644 | 3f53e0f33ee260a962b97ef26de1d66b32a12a15 |
     | undelta.lisp        | 100644 | ae0a070133d1a14d6e940a0f790f40b37e885b22 |
     | util.lisp           | 100644 | 02cf7436032dd6adec92d42d3ed9b7f6307860f7 |
@@ -138,9 +138,9 @@
     | Name       |   Mode | Hash                                     |
     |------------+--------+------------------------------------------|
     | delta.lisp | 100644 | 1e6be7f65fa732646316d72a9a725c0145a84758 |
-    | graph.lisp | 100644 | 31576396aff0fff28f69e0ef84571c0dc8cc43ec |
-    | model.lisp | 100644 | 4ea44c169c65dde7760fe14a39e187439e3a5520 |
-    | tree.lisp  | 100644 | 74b8aa5ffc736eadf47bcf442f72963af133119b |
+    | graph.lisp | 100644 | 513606d9eb9eb9a5a3891d7307cb071034d84b59 |
+    | model.lisp | 100644 | f305b81a1781579c5570d5bc5209048a0e3fe9dc |
+    | tree.lisp  | 100644 | c798b0c4d0b5f552548bac98f44b5b5c19334e66 |
     | types.lisp | 100644 | 3f53e0f33ee260a962b97ef26de1d66b32a12a15 |
     | util.lisp  | 100644 | 02cf7436032dd6adec92d42d3ed9b7f6307860f7 |
 
