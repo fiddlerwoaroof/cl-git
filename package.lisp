@@ -5,7 +5,8 @@
   (:export
    #:ensure-ref
    #:repository
-   #:component))
+   #:component
+   #:*want-delta*))
 
 (defpackage :fwoar.cl-git.types
   (:use :cl )

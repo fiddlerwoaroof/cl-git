@@ -192,7 +192,8 @@
                     :pack pack-file))))
 
 (fiveam:def-test pack-files-offsets ()
-  (let* ((expectations-file
+  (let* ((fwoar.cl-git:*want-delta* t)
+         (expectations-file
            (asdf:system-relative-pathname
             :co.fwoar.cl-git/tests
             "tests/sample-git-objects/pack-a0533639fdee4493fdbfc1b701872ace63b95e5f.delta-bases"))
@@ -279,22 +280,20 @@
 
 (fiveam:def-test pack-file-apply-delta-commands ()
   (flet ((test-ref (ref)
-           (let* ((extracted-ref
-                    (fwoar.cl-git::extract-object
-                     (fwoar.cl-git::packed-ref :fwoar.cl-git.git-objects.pack-2 ref)))
-                  (base-desc (fwoar.cl-git::base extracted-ref))
-                  (pack (car (fwoar.cl-git::pack-files *fake-repo-2*)))
-                  (expectations-file
+           (let* ((expectations-file
                     (asdf:system-relative-pathname
                      :co.fwoar.cl-git/tests
                      (format nil "tests/sample-git-objects/blob-~a-fixture"
-                             (subseq ref 0 8))))
+                             (subseq ref 0 7))))
                   (expectations
                     (alexandria:read-file-into-byte-vector expectations-file)))
              (5am:is
               (serapeum:vector=
                expectations
-               (fwoar.cl-git::trace-bases pack extracted-ref))))))
+               (fwoar.cl-git::data
+                (fwoar.cl-git::extract-object
+                 (fwoar.cl-git::packed-ref :fwoar.cl-git.git-objects.pack-2 ref))))))))
+
     (test-ref "87c2b9b2dfaa1fbf66b3fe88d3a925593886b159")
 
     (test-ref "9776df71b5ddf298c56e99b7291f9e68906cf049")

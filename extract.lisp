@@ -154,14 +154,18 @@
                                 ref
                                 nil)))))
 
+(defparameter *want-delta* nil)
 (defgeneric extract-object (object)
   (:method ((object loose-ref))
     (extract-loose-object (ref-repo object)
                           (loose-ref-file object)
                           object))
   (:method ((object packed-ref))
-    (resolve-delta object
-                   (data-lens.lenses:view *object-data-lens*
-                                          (extract-object-from-pack (packed-ref-pack object)
-                                                                    (packed-ref-offset object)
-                                                                    object)))))
+    (let ((maybe-delta (data-lens.lenses:view *object-data-lens*
+                                              (extract-object-from-pack (packed-ref-pack object)
+                                                                        (packed-ref-offset object)
+                                                                        object))))
+      (if *want-delta*
+          maybe-delta
+          (resolve-delta object
+                         maybe-delta)))))
