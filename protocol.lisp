@@ -4,8 +4,8 @@
   (:method :around (type s repository &key hash)
     (let ((result (call-next-method)))
       (prog1 result
-        (when (typep result 'fwoar.cl-git::git-object)
-          (setf (fwoar.cl-git::hash result) hash)))))
+        (when (typep result 'fwoar.cl-git:git-object)
+          (setf (fwoar.cl-git:hash result) hash)))))
 
 
   (:method ((type (eql :tag)) s repository &key)
@@ -13,8 +13,8 @@
 
 (defgeneric component (component object)
   (:argument-precedence-order object component)
-  (:method (component (object fwoar.cl-git::git-ref))
-    (component component (fwoar.cl-git::extract-object object)))
+  (:method (component (object fwoar.cl-git:git-ref))
+    (component component (fwoar.cl-git:extract-object object)))
   (:method ((component sequence) object)
     (reduce (lambda (cur next)
               (component next cur))

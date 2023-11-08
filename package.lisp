@@ -14,11 +14,9 @@
 (defpackage :fwoar.cl-git.pack
   (:use :cl)
   (:export #:pack #:pack-file #:index-file #:idx-toc
-           #:with-pack-streams
-           #:seek-to-object-in-pack
-           #:packed-ref
-           #:packed-ref-pack
-           #:packed-ref-offset))
+           #:with-pack-streams #:seek-to-object-in-pack #:packed-ref
+           #:packed-ref-pack #:packed-ref-offset #:extract-object #:git-ref
+           #:loose-ref))
 
 (defpackage :fwoar.cl-git
   (:use :cl :fwoar.cl-git.protocol)
@@ -29,8 +27,7 @@
 
 (defpackage :fwoar.cl-git.types
   (:use :cl )
-  (:export
-   #:octet))
+  (:export #:octet))
 
 (defpackage :cl-git-user
   (:use :cl :fwoar.cl-git))
