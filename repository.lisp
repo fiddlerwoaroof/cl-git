@@ -23,7 +23,7 @@
 
 (defun ensure-ref (thing &optional (repo *git-repository*))
   (typecase thing
-    (git-ref thing)
+    (fwoar.cl-git.ref:ref thing)
     (t (alexandria:when-let ((maybe-result (ref repo thing)))
          (alexandria:ensure-gethash (component :hash maybe-result)
                                     *ref-intern-table*
