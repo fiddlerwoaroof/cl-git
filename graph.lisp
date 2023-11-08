@@ -36,23 +36,18 @@
           ((ref (fwoar.cl-git:ensure-ref commit))
            (direct-obj (fwoar.cl-git::extract-object
                         ref))
-           (obj (etypecase direct-obj
-                  (fwoar.cl-git::delta
-                   (fwoar.cl-git::-extract-object-of-type
-                    :commit
-                    (fwoar.cl-git::trace-bases
-                     (fwoar.cl-git::packed-ref-pack
-                      ref)
-                     direct-obj)
-                    fwoar.cl-git::*git-repository*
-                    :hash (fwoar.cl-git::ref-hash ref)))
-                  (fwoar.cl-git::git-object
-                   direct-obj)))
+           (obj direct-obj)
            (parents (fwoar.cl-git:component
                      :parents
                      obj)))
-        (when parents
-          parents)))))
+        (cond ((null parents) parents)
+              ((null (cdr parents))
+               (let ((maybe-branch (get-commit-parents repository
+                                                       (car parents))))
+                 (if maybe-branch
+                     maybe-branch
+                     parents)))
+              (t parents))))))
 
 (defmethod cl-dot:graph-object-node ((graph git-graph) (commit string))
   (alexandria:ensure-gethash
@@ -78,3 +73,14 @@
                                             (edge-cache graph))))
               (data-lens:over (serapeum:op (subseq _ 0 8))))
              (get-commit-parents (repo graph) commit))))
+
+
+(defun graph-repository (path roots)
+  (co.fwoar.git:with-repository (path)
+    (cl-dot:generate-graph-from-roots
+     (make-instance 'git-graph
+                    :repo fwoar.cl-git::*git-repository*
+                    :stops ())
+     (mapcar (data-lens:∘ 'fwoar.cl-git::ref-hash
+                          'co.fwoar.git::resolve-refish)
+             roots))))
