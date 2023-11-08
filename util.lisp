@@ -92,3 +92,9 @@
                         bindings)
               (progn
                 ,@body)))
+
+
+(defpackage :fwoar.cl-git.utils
+  (:use :cl)
+  (:import-from :fwoar.cl-git #:partition-subseq)
+  (:export #:partition-subseq))

@@ -1,6 +1,6 @@
-(in-package :fwoar.cl-git)
+(in-package :fwoar.cl-git.commit)
 
-(defclass git-commit (git-object)
+(defclass git-commit (fwoar.cl-git:git-object)
   ((%metadata :initarg :metadata :reader metadata)
    (%data :initarg :data :reader data)))
 
@@ -13,18 +13,21 @@
 (defmethod print-object ((o git-commit) s)
   (if *print-readably*
       (format s "#.(git-commit ~<~s~_~s~_~s~:>)"
-              (list (hash o)
+              (list (fwoar.cl-git:hash o)
                     (metadata o)
                     (data o)))
       (print-unreadable-object (o s :type t :identity t)
-        (format s "~a" (format nil "~7,1,1,'x@a" (clamp-string (hash o) 7))))))
+        (format s "~a" (format nil "~7,1,1,'x@a" (clamp-string (fwoar.cl-git:hash o) 7))))))
 
 (defun parse-commit (commit)
   (destructuring-bind (metadata message)
-      (partition-subseq #(#\newline #\newline)
-                        commit #+(or)(babel:octets-to-string commit :encoding :latin1))
+      (fwoar.cl-git.utils:partition-subseq
+       #(#\newline #\newline)
+       commit
+       #+(or)(babel:octets-to-string commit :encoding :latin1))
     (values message
-            (map 'vector (serapeum:op (partition #\space _))
+            (map 'vector
+                 (serapeum:op (fwoar.string-utils:partition #\space _))
                  (fwoar.string-utils:split #\newline metadata)))))
 
 (defun make-commit (data hash)
@@ -32,31 +35,32 @@
       (parse-commit data)
     (git-commit hash metadata message)))
 
-(defmethod -extract-object-of-type ((type (eql :commit)) s repository &key hash)
-  (make-commit (babel:octets-to-string s :encoding *git-encoding*)
+(defmethod -extract-object-of-type
+    ((type (eql :commit)) s repository &key hash)
+  (make-commit (babel:octets-to-string s :encoding fwoar.cl-git:*git-encoding*)
                hash))
 
+(defcomponents git-commit (object _)
+  ((eql :tree) (fwoar.cl-git:ensure-ref
+                (cadr
+                 (fw.lu:v-assoc :tree (metadata object)
+                                :test 'string-equal))))
 
-(defmethod component ((component (eql :tree)) (object git-commit))
-  (ensure-ref
-   (cadr
-    (fw.lu:v-assoc :tree (metadata object)
-                   :test 'string-equal))))
-(defmethod component ((component (eql :author)) (object git-commit))
-  (second
-   (fw.lu:v-assoc :author (metadata object)
-                  :test 'string-equal)))
-(defmethod component ((component (eql :committer)) (object git-commit))
-  (second
-   (fw.lu:v-assoc :committer (metadata object)
-                  :test 'string-equal)))
-(defmethod component ((component (eql :parents)) (object git-commit))
-  (data-lens.transducers:into '()
-                              (data-lens:•
-                               (data-lens.transducers:filtering
-                                (data-lens:on (data-lens:== "parent" :test 'equal)
-                                              #'car))
-                               (data-lens.transducers:mapping #'cadr))
-                              (metadata object)))
-(defmethod component ((component (eql :message)) (object git-commit))
-  (data object))
+  ((eql :author) (second
+                  (fw.lu:v-assoc :author (metadata object)
+                                 :test 'string-equal)))
+
+  ((eql :committer) (second
+                     (fw.lu:v-assoc :committer (metadata object)
+                                    :test 'string-equal)))
+
+  ((eql :parents) (data-lens.transducers:into
+                   '()
+                   (data-lens:•
+                    (data-lens.transducers:filtering
+                     (data-lens:on (data-lens:== "parent" :test 'equal)
+                                   #'car))
+                    (data-lens.transducers:mapping #'cadr))
+                   (metadata object)))
+
+  ((eql :message) (data object)))

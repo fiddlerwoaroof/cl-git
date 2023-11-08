@@ -25,3 +25,21 @@
               (component next cur))
             component
             :initial-value object)))
+
+
+(defmacro defcomponent (component &body body)
+  (declare (ignore component body))
+  (error "defcomponent not available on its own"))
+(defmacro defcomponents (class (object-sym component-sym) &body clauses)
+  `(macrolet ((defcomponent (component &body component-body)
+                `(defmethod component ((,',component-sym ,component)
+                                       (,',object-sym ,',class))
+                   ,@component-body)))
+     ,@(loop for (component . component-body) in clauses
+             collect `(defcomponent ,component
+                        ,@component-body))))
+
+(defpackage :fwoar.cl-git.protocol
+  (:use)
+  (:import-from :fwoar.cl-git #:-extract-object-of-type #:component #:defcomponents)
+  (:export #:-extract-object-of-type #:component #:defcomponents))

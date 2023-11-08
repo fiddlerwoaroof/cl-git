@@ -1,5 +1,5 @@
 (defpackage :fwoar.cl-git.git-objects
-  (:use :cl )
+  (:use :cl :fwoar.cl-git.protocol)
   (:export ))
 (in-package :fwoar.cl-git.git-objects)
 
@@ -26,26 +26,26 @@
                   :co.fwoar.cl-git
                   "tests/sample-git-objects/hello-world-commit.git-obj")
                  (make-instance 'fake-ref :hash "the-hash"))))
-    (5am:is (typep object 'fwoar.cl-git::git-commit))
+    (5am:is (typep object 'fwoar.cl-git.commit::git-commit))
     (5am:is (equal "hello, git!
 "
-                   (fwoar.cl-git:component :message object)))
+                   (component :message object)))
     (5am:is (equal ()
-                   (fwoar.cl-git:component :parents object)))
+                   (component :parents object)))
     (5am:is (equal "L Edgley <foo@bar.com> 1605513585 -0800"
-                   (fwoar.cl-git:component :author object)))
+                   (component :author object)))
     (5am:is (equal "Ed L <el-github@elangley.org> 1605513585 -0800"
-                   (fwoar.cl-git:component :committer object)))
+                   (component :committer object)))
     (5am:is (equal ()
-                   (fwoar.cl-git:component :parents object)))
+                   (component :parents object)))
     (5am:is (equal "1da546ab4697b719efb62f11fd785d6ad3b226d2"
-                   (fwoar.cl-git::ref-hash (fwoar.cl-git:component :tree object))))
+                   (fwoar.cl-git::ref-hash (component :tree object))))
     (5am:is (equal *fake-repo*
-                   (fwoar.cl-git::ref-repo (fwoar.cl-git:component :tree object))))
+                   (fwoar.cl-git::ref-repo (component :tree object))))
     (5am:is (equal '(("author" "L Edgley <foo@bar.com> 1605513585 -0800")
                      ("committer" "Ed L <el-github@elangley.org> 1605513585 -0800")
                      ("tree" "1da546ab4697b719efb62f11fd785d6ad3b226d2"))
-                   (coerce (sort (copy-seq (fwoar.cl-git::metadata object))
+                   (coerce (sort (copy-seq (fwoar.cl-git.commit::metadata object))
                                  'string-lessp
                                  :key 'car)
                            'list)))))
@@ -62,11 +62,11 @@
            (entry (progn (5am:is (= (length entries) 1))
                          (car entries))))
       (5am:is (equal "4b5fa63702dd96796042e92787f464e28f09f17d"
-                     (fwoar.cl-git:component :hash entry)))
+                     (component :hash entry)))
       (5am:is (equal "a"
-                     (fwoar.cl-git:component :name entry)))
+                     (component :name entry)))
       (5am:is (equal "100644"
-                     (fwoar.cl-git:component :mode entry))))))
+                     (component :mode entry))))))
 
 (defparameter *fake-repo* :fwoar.cl-git.git-objects.pack)
 (defmethod fwoar.cl-git::ref ((repo (eql *fake-repo*)) hash)
@@ -91,27 +91,27 @@
                         (fiveam:is (equal *fake-repo* (fwoar.cl-git::ref-repo ref)))
                         (fwoar.cl-git::extract-object ref))))
 
-    (5am:is (typep object 'fwoar.cl-git::git-commit))
+    (5am:is (typep object 'fwoar.cl-git.commit::git-commit))
     (5am:is (equal "hello, git!
 "
-                   (fwoar.cl-git:component :message object)))
+                   (component :message object)))
     (5am:is (equal ()
-                   (fwoar.cl-git:component :parents object)))
+                   (component :parents object)))
     (5am:is (equal "L Edgley <foo@bar.com> 1605513585 -0800"
-                   (fwoar.cl-git:component :author object)))
+                   (component :author object)))
     (5am:is (equal "Ed L <el-github@elangley.org> 1605513585 -0800"
-                   (fwoar.cl-git:component :committer object)))
+                   (component :committer object)))
     (5am:is (equal ()
-                   (fwoar.cl-git:component :parents object)))
+                   (component :parents object)))
     (let ((fwoar.cl-git::*git-repository* *fake-repo*))
       (5am:is (equal "1da546ab4697b719efb62f11fd785d6ad3b226d2"
-                     (fwoar.cl-git::ref-hash (fwoar.cl-git:component :tree object))))
+                     (fwoar.cl-git::ref-hash (component :tree object))))
       (5am:is (equal *fake-repo*
-                     (fwoar.cl-git::ref-repo (fwoar.cl-git:component :tree object)))))
+                     (fwoar.cl-git::ref-repo (component :tree object)))))
     (5am:is (equal '(("author" "L Edgley <foo@bar.com> 1605513585 -0800")
                      ("committer" "Ed L <el-github@elangley.org> 1605513585 -0800")
                      ("tree" "1da546ab4697b719efb62f11fd785d6ad3b226d2"))
-                   (coerce (sort (copy-seq (fwoar.cl-git::metadata object))
+                   (coerce (sort (copy-seq (fwoar.cl-git.commit::metadata object))
                                  'string-lessp
                                  :key 'car)
                            'list)))))
@@ -130,11 +130,11 @@
            (entry (progn (5am:is (= (length entries) 1))
                          (car entries))))
       (5am:is (equal "4b5fa63702dd96796042e92787f464e28f09f17d"
-                     (fwoar.cl-git:component :hash entry)))
+                     (component :hash entry)))
       (5am:is (equal "a"
-                     (fwoar.cl-git:component :name entry)))
+                     (component :name entry)))
       (5am:is (equal "100644"
-                     (fwoar.cl-git:component :mode entry))))))
+                     (component :mode entry))))))
 
 (fiveam:def-test pack-files-blob ()
   (let* ((hash "4b5fa63702dd96796042e92787f464e28f09f17d")
