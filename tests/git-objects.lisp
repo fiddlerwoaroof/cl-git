@@ -201,7 +201,7 @@
     (loop for (ref . base-offset) in expectations
           do (5am:is (equal base-offset
                             (second
-                             (fwoar.cl-git::base
+                             (fwoar.cl-git.delta:base
                               (fwoar.cl-git:extract-object
                                (fwoar.cl-git.pack:packed-ref *fake-repo-2* ref)))))))
     ))

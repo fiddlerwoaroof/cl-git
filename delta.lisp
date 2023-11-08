@@ -1,6 +1,6 @@
-(in-package :fwoar.cl-git)
+(in-package :fwoar.cl-git.delta)
 
-(defclass delta (git-object)
+(defclass delta (fwoar.cl-git:git-object)
   ((%repository :initarg :repository :reader repository)
    (%base :initarg :base :reader base)
    (%commands :initarg :commands :reader commands)
@@ -9,10 +9,10 @@
   (:documentation
    "The base type for deltified git objects"))
 
-(defclass+ ofs-delta (delta)
+(fwoar.cl-git::defclass+ ofs-delta (delta)
   ())
 
-(defclass+ ref-delta (delta)
+(fwoar.cl-git::defclass+ ref-delta (delta)
   ()
   (:documentation "TODO: mostly unimplemented/untested"))
 
@@ -41,9 +41,9 @@
 
 (defun obj-to-type (obj)
   (etypecase obj
-    (git-commit :commit)
-    (git-tree :tree)
-    (blob :blob)))
+    (fwoar.cl-git:git-commit :commit)
+    (fwoar.cl-git:git-tree :tree)
+    (fwoar.cl-git:blob :blob)))
 
 (defun trace-bases (pack delta)
   (assert (typep delta 'delta))
@@ -51,7 +51,7 @@
          (o (fwoar.cl-git.pack::extract-object-at-pos
              pack
              offset
-             (make-instance 'git-ref
+             (make-instance 'fwoar.cl-git:git-ref
                             :hash "00000000"
                             :repo nil)))
          (obj (serapeum:assocdr :object-data o))
@@ -74,18 +74,19 @@
                                                  maybe-delta)
              (-extract-object-of-type type
                                       raw-data
-                                      (ref-repo ref)
-                                      :hash (ref-hash ref))))
+                                      (fwoar.cl-git::ref-repo ref)
+                                      :hash (fwoar.cl-git::ref-hash ref))))
     (t maybe-delta)))
 
 (defun get-bases (pack delta)
   (if (typep delta 'delta)
       (let* ((offset (second (base delta)))
-             (o (extract-object-at-pos pack
-                                       offset
-                                       (make-instance 'git-ref
-                                                      :hash "00000000"
-                                                      :repo nil)))
+             (o (fwoar.cl-git.pack:extract-object-at-pos
+                 pack
+                 offset
+                 (make-instance 'fwoar.cl-git:git-ref
+                                :hash "00000000"
+                                :repo nil)))
              (obj (serapeum:assocdr :object-data o)))
         (cons delta (get-bases pack obj)))
       (list delta)))

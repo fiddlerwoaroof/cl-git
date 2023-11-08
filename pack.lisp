@@ -182,7 +182,7 @@
          (size (fwoar.cl-git::get-object-size metadata))
          (delta-base (case type
                        (:ref-delta (error ":ref-delta not implemented yet"))
-                       (:ofs-delta (fwoar.cl-git::get-ofs-delta-offset-streaming s))))
+                       (:ofs-delta (fwoar.cl-git.delta::get-ofs-delta-offset-streaming s))))
          (decompressed (chipz:decompress nil (chipz:make-dstate 'chipz:zlib) s))
          (object-data (fwoar.cl-git::extract-object-of-type type decompressed repository pos (pathname s) ref delta-base)))
     (list (cons :type (fwoar.cl-git::object-type->sym type))
@@ -208,5 +208,5 @@
                                              object))))
     (if *want-delta*
         maybe-delta
-        (fwoar.cl-git::resolve-delta object
-                                     maybe-delta))))
+        (fwoar.cl-git.delta:resolve-delta object
+                                          maybe-delta))))
