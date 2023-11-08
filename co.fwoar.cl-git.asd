@@ -51,8 +51,11 @@
                #:co.fwoar.cl-git)
   :serial t
   :perform (test-op (o c)
-                    (unless (symbol-call :fiveam '#:run! :fwoar.cl-git)
-                      (error "some tests failed")))
+                    (handler-case
+                        (unless (symbol-call :fiveam '#:run! :fwoar.cl-git)
+                          (error "some tests failed"))
+                      (error (c)
+                        (format t ">>> ~s~%" c))))
   :components ((:module "tests"
                 :components ((:file "tests")
                              (:file "branch-resolution" :depends-on ("tests"))

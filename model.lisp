@@ -159,3 +159,8 @@
   (hash object))
 (defmethod component ((component (eql :hash)) (object git-ref))
   (ref-hash object))
+
+(fw.lu:defclass+ blob (fwoar.cl-git::git-object)
+  ((%data :reader data :initarg :data)))
+(defmethod -extract-object-of-type ((type (eql :blob)) s repository &key)
+  (blob s))

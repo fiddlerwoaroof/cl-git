@@ -3,13 +3,16 @@
   (:export))
 (in-package :fwoar.cl-git.package)
 
+(defpackage :fwoar.cl-git.protocol
+  (:use :cl)
+  (:export #:-extract-object-of-type #:component #:defcomponents))
+
 (defpackage :fwoar.cl-git.commit
   (:use :cl :fwoar.cl-git.protocol)
   (:export #:git-commit))
 
-
 (defpackage :fwoar.cl-git
-  (:use :cl )
+  (:use :cl :fwoar.cl-git.protocol)
   (:import-from :fwoar.cl-git.commit #:git-commit)
   (:export #:ensure-ref #:repository #:*want-delta* #:git-object
            #:hash #:*git-encoding* #:git-commit))

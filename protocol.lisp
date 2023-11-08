@@ -1,25 +1,20 @@
-(in-package :fwoar.cl-git)
-
-(defclass+ blob (git-object)
-  ((%data :reader data :initarg :data)))
+(in-package :fwoar.cl-git.protocol)
 
 (defgeneric -extract-object-of-type (type s repository &key  &allow-other-keys)
   (:method :around (type s repository &key hash)
     (let ((result (call-next-method)))
       (prog1 result
-        (when (typep result 'git-object)
-          (setf (hash result) hash)))))
+        (when (typep result 'fwoar.cl-git::git-object)
+          (setf (fwoar.cl-git::hash result) hash)))))
 
-  (:method ((type (eql :blob)) s repository &key)
-    (blob s))
 
   (:method ((type (eql :tag)) s repository &key)
     s))
 
 (defgeneric component (component object)
   (:argument-precedence-order object component)
-  (:method (component (object git-ref))
-    (component component (extract-object object)))
+  (:method (component (object fwoar.cl-git::git-ref))
+    (component component (fwoar.cl-git::extract-object object)))
   (:method ((component sequence) object)
     (reduce (lambda (cur next)
               (component next cur))
@@ -38,8 +33,3 @@
      ,@(loop for (component . component-body) in clauses
              collect `(defcomponent ,component
                         ,@component-body))))
-
-(defpackage :fwoar.cl-git.protocol
-  (:use)
-  (:import-from :fwoar.cl-git #:-extract-object-of-type #:component #:defcomponents)
-  (:export #:-extract-object-of-type #:component #:defcomponents))
