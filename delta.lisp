@@ -9,10 +9,10 @@
   (:documentation
    "The base type for deltified git objects"))
 
-(fwoar.cl-git::defclass+ ofs-delta (delta)
+(fwoar.cl-git.utils:defclass+ ofs-delta (delta)
   ())
 
-(fwoar.cl-git::defclass+ ref-delta (delta)
+(fwoar.cl-git.utils:defclass+ ref-delta (delta)
   ()
   (:documentation "TODO: mostly unimplemented/untested"))
 

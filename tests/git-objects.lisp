@@ -272,7 +272,7 @@
                 "cab7cafae3b61c5b101ee914cd4f5c8357e77fad"
                 "f03a8d1b4cea085ee9555037d09bca2dbfb990cb")))
     (loop for commit in shas
-          for obj = (fwoar.cl-git.pack::raw-object-for-ref
+          for obj = (fwoar.cl-git.pack:raw-object-for-ref
                      (fwoar.cl-git:ref :fwoar.cl-git.git-objects.pack-2 commit))
           do (5am:is (equal (crypto:byte-array-to-hex-string
                              (crypto:digest-sequence :sha1 obj))
