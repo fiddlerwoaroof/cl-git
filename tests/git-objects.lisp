@@ -9,7 +9,7 @@
   :in :fwoar.cl-git)
 (fiveam:in-suite :fwoar.cl-git.git-objects)
 
-(defclass fake-ref (fwoar.cl-git:git-ref)
+(defclass fake-ref (fwoar.cl-git.ref:ref)
   ())
 (defun fake-ref (repo hash)
   (fwoar.lisputils:new 'fake-ref repo hash))

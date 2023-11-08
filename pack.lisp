@@ -7,7 +7,7 @@
 (defun pack (index pack repository)
   (fw.lu:new 'pack index pack repository))
 
-(defclass packed-ref (fwoar.cl-git::git-ref)
+(defclass packed-ref (fwoar.cl-git.ref:ref)
   ((%pack :initarg :pack :reader packed-ref-pack)
    (%offset :initarg :offset :reader packed-ref-offset)))
 

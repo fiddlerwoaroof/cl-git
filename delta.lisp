@@ -51,7 +51,7 @@
          (o (fwoar.cl-git.pack::extract-object-at-pos
              pack
              offset
-             (make-instance 'fwoar.cl-git:git-ref
+             (make-instance 'fwoar.cl-git.ref:ref
                             :hash "00000000"
                             :repo nil)))
          (obj (serapeum:assocdr :object-data o))
@@ -84,7 +84,7 @@
              (o (fwoar.cl-git.pack:extract-object-at-pos
                  pack
                  offset
-                 (make-instance 'fwoar.cl-git:git-ref
+                 (make-instance 'fwoar.cl-git.ref:ref
                                 :hash "00000000"
                                 :repo nil)))
              (obj (serapeum:assocdr :object-data o)))

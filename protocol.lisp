@@ -13,7 +13,7 @@
 
 (defgeneric component (component object)
   (:argument-precedence-order object component)
-  (:method (component (object fwoar.cl-git:git-ref))
+  (:method (component (object fwoar.cl-git.ref:ref))
     (component component (fwoar.cl-git:extract-object object)))
   (:method ((component sequence) object)
     (reduce (lambda (cur next)
