@@ -9,17 +9,17 @@
   :in :fwoar.cl-git)
 (fiveam:in-suite :fwoar.cl-git.git-objects)
 
-(defclass fake-ref (fwoar.cl-git::git-ref)
+(defclass fake-ref (fwoar.cl-git:git-ref)
   ())
 (defun fake-ref (repo hash)
   (fwoar.lisputils:new 'fake-ref repo hash))
 
-(defmethod fwoar.cl-git::ref ((repo (eql *fake-repo*)) hash)
+(defmethod fwoar.cl-git:ref ((repo (eql *fake-repo*)) hash)
   (fake-ref repo hash))
 
 
 (fiveam:def-test basic-commit ()
-  (let ((fwoar.cl-git::*git-repository* *fake-repo*)
+  (let ((fwoar.cl-git:*git-repository* *fake-repo*)
         (object (fwoar.cl-git::extract-loose-object
                  nil
                  (asdf:system-relative-pathname
@@ -45,7 +45,7 @@
     (5am:is (equal '(("author" "L Edgley <foo@bar.com> 1605513585 -0800")
                      ("committer" "Ed L <el-github@elangley.org> 1605513585 -0800")
                      ("tree" "1da546ab4697b719efb62f11fd785d6ad3b226d2"))
-                   (coerce (sort (copy-seq (fwoar.cl-git.commit::metadata object))
+                   (coerce (sort (copy-seq (fwoar.cl-git.commit:metadata object))
                                  'string-lessp
                                  :key 'car)
                            'list)))))
@@ -69,27 +69,27 @@
                      (component :mode entry))))))
 
 (defparameter *fake-repo* :fwoar.cl-git.git-objects.pack)
-(defmethod fwoar.cl-git::ref ((repo (eql *fake-repo*)) hash)
+(defmethod fwoar.cl-git:ref ((repo (eql *fake-repo*)) hash)
   (fake-ref repo hash))
 (defmethod fwoar.cl-git::pack-files ((repo (eql *fake-repo*)))
   (list
-   (fwoar.cl-git.pack::pack (asdf:system-relative-pathname
-                             :co.fwoar.cl-git
-                             "tests/sample-git-objects/hello-world-pack.idx")
-                            (asdf:system-relative-pathname
-                             :co.fwoar.cl-git
-                             "tests/sample-git-objects/hello-world-pack.pack")
-                            repo)))
+   (fwoar.cl-git.pack:pack (asdf:system-relative-pathname
+                            :co.fwoar.cl-git
+                            "tests/sample-git-objects/hello-world-pack.idx")
+                           (asdf:system-relative-pathname
+                            :co.fwoar.cl-git
+                            "tests/sample-git-objects/hello-world-pack.pack")
+                           repo)))
 
 (fiveam:def-test pack-files-commit ()
   (let* ((hash "7d7b56a6a64e090041f55293511f48aba6699f1a")
-         (ref (fwoar.cl-git::packed-ref
+         (ref (fwoar.cl-git.pack:packed-ref
                :fwoar.cl-git.git-objects.pack
                hash))
          (object (progn (fiveam:is (not (null ref)))
                         (fiveam:is (equal hash (fwoar.cl-git::ref-hash ref)))
                         (fiveam:is (equal *fake-repo* (fwoar.cl-git::ref-repo ref)))
-                        (fwoar.cl-git::extract-object ref))))
+                        (fwoar.cl-git:extract-object ref))))
 
     (5am:is (typep object 'fwoar.cl-git:git-commit))
     (5am:is (equal "hello, git!
@@ -103,7 +103,7 @@
                    (component :committer object)))
     (5am:is (equal ()
                    (component :parents object)))
-    (let ((fwoar.cl-git::*git-repository* *fake-repo*))
+    (let ((fwoar.cl-git:*git-repository* *fake-repo*))
       (5am:is (equal "1da546ab4697b719efb62f11fd785d6ad3b226d2"
                      (fwoar.cl-git::ref-hash (component :tree object))))
       (5am:is (equal *fake-repo*
@@ -118,13 +118,13 @@
 
 (fiveam:def-test pack-files-tree ()
   (let* ((hash "1da546ab4697b719efb62f11fd785d6ad3b226d2")
-         (ref (fwoar.cl-git::packed-ref
+         (ref (fwoar.cl-git.pack:packed-ref
                :fwoar.cl-git.git-objects.pack
                hash))
          (object (progn (fiveam:is (not (null ref)))
                         (fiveam:is (equal hash (fwoar.cl-git::ref-hash ref)))
                         (fiveam:is (equal *fake-repo* (fwoar.cl-git::ref-repo ref)))
-                        (fwoar.cl-git::extract-object ref))))
+                        (fwoar.cl-git:extract-object ref))))
     (5am:is (typep object 'fwoar.cl-git::git-tree))
     (let* ((entries (fwoar.cl-git::entries object))
            (entry (progn (5am:is (= (length entries) 1))
@@ -138,20 +138,20 @@
 
 (fiveam:def-test pack-files-blob ()
   (let* ((hash "4b5fa63702dd96796042e92787f464e28f09f17d")
-         (ref (fwoar.cl-git::packed-ref
+         (ref (fwoar.cl-git.pack:packed-ref
                :fwoar.cl-git.git-objects.pack
                hash))
          (object (progn (fiveam:is (not (null ref)))
                         (fiveam:is (equal hash (fwoar.cl-git::ref-hash ref)))
                         (fiveam:is (equal *fake-repo* (fwoar.cl-git::ref-repo ref)))
-                        (fwoar.cl-git::extract-object ref))))
+                        (fwoar.cl-git:extract-object ref))))
     (5am:is (typep object 'fwoar.cl-git::blob))
     (5am:is (equal "hello, world
 "
                    (babel:octets-to-string
                     (fwoar.cl-git::data
-                     (fwoar.cl-git::extract-object
-                      (fwoar.cl-git::packed-ref
+                     (fwoar.cl-git:extract-object
+                      (fwoar.cl-git.pack:packed-ref
                        :fwoar.cl-git.git-objects.pack
                        "4b5fa63702dd96796042e92787f464e28f09f17d")))
                     :encoding :utf-8)))))
@@ -162,21 +162,21 @@
   ())
 (defun fake-ref-2 (repo hash)
   (fwoar.lisputils:new 'fake-ref-2 repo hash))
-(defmethod fwoar.cl-git.pack::packed-ref-pack ((ref fake-ref-2))
+(defmethod fwoar.cl-git.pack:packed-ref-pack ((ref fake-ref-2))
   (let* ((pack-file (asdf:system-relative-pathname
                      :co.fwoar.cl-git/tests
                      "tests/sample-git-objects/pack-a0533639fdee4493fdbfc1b701872ace63b95e5f.pack"))
          (index-file (asdf:system-relative-pathname
                       :co.fwoar.cl-git/tests
                       "tests/sample-git-objects/pack-a0533639fdee4493fdbfc1b701872ace63b95e5f.idx")))
-    (make-instance 'fwoar.cl-git.pack::pack
+    (make-instance 'fwoar.cl-git.pack:pack
                    :repository nil
                    :index index-file
                    :pack pack-file)))
-(defmethod fwoar.cl-git.pack::packed-ref-offset ((ref fake-ref-2))
-  (nth-value 1 (fwoar.cl-git.pack::find-sha-in-pack (fwoar.cl-git.pack::packed-ref-pack ref)
+(defmethod fwoar.cl-git.pack:packed-ref-offset ((ref fake-ref-2))
+  (nth-value 1 (fwoar.cl-git.pack::find-sha-in-pack (fwoar.cl-git.pack:packed-ref-pack ref)
                                                     (fwoar.cl-git::ref-hash ref))))
-(defmethod fwoar.cl-git::ref ((repo (eql *fake-repo-2*)) hash)
+(defmethod fwoar.cl-git:ref ((repo (eql *fake-repo-2*)) hash)
   (fake-ref-2 repo hash))
 (defmethod fwoar.cl-git::pack-files ((repo (eql *fake-repo-2*)))
   (list
@@ -186,7 +186,7 @@
           (index-file (asdf:system-relative-pathname
                        :co.fwoar.cl-git/tests
                        "tests/sample-git-objects/pack-a0533639fdee4493fdbfc1b701872ace63b95e5f.idx")))
-     (make-instance 'fwoar.cl-git.pack::pack
+     (make-instance 'fwoar.cl-git.pack:pack
                     :repository nil
                     :index index-file
                     :pack pack-file))))
@@ -202,8 +202,8 @@
           do (5am:is (equal base-offset
                             (second
                              (fwoar.cl-git::base
-                              (fwoar.cl-git::extract-object
-                               (fwoar.cl-git::packed-ref *fake-repo-2* ref)))))))
+                              (fwoar.cl-git:extract-object
+                               (fwoar.cl-git.pack:packed-ref *fake-repo-2* ref)))))))
     ))
 
 (fiveam:def-test test-pack-roundtrip ()
@@ -273,7 +273,7 @@
                 "f03a8d1b4cea085ee9555037d09bca2dbfb990cb")))
     (loop for commit in shas
           for obj = (fwoar.cl-git.pack::raw-object-for-ref
-                     (fwoar.cl-git::ref :fwoar.cl-git.git-objects.pack-2 commit))
+                     (fwoar.cl-git:ref :fwoar.cl-git.git-objects.pack-2 commit))
           do (5am:is (equal (crypto:byte-array-to-hex-string
                              (crypto:digest-sequence :sha1 obj))
                             commit)))))
@@ -291,8 +291,8 @@
               (serapeum:vector=
                expectations
                (fwoar.cl-git::data
-                (fwoar.cl-git::extract-object
-                 (fwoar.cl-git::packed-ref :fwoar.cl-git.git-objects.pack-2 ref))))))))
+                (fwoar.cl-git:extract-object
+                 (fwoar.cl-git.pack:packed-ref :fwoar.cl-git.git-objects.pack-2 ref))))))))
 
     (test-ref "87c2b9b2dfaa1fbf66b3fe88d3a925593886b159")
 

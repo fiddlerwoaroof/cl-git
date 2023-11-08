@@ -23,7 +23,8 @@
   (:import-from :fwoar.cl-git.commit #:git-commit)
   (:import-from :fwoar.cl-git.pack #:packed-ref)
   (:export #:ensure-ref #:repository #:*want-delta* #:git-object
-           #:hash #:*git-encoding* #:git-commit #:ref #:component))
+           #:hash #:*git-encoding* #:git-commit #:ref #:component
+           #:*git-repository* #:git-ref #:extract-object))
 
 (defpackage :fwoar.cl-git.types
   (:use :cl )
