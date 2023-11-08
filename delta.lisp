@@ -41,7 +41,7 @@
 
 (defun obj-to-type (obj)
   (etypecase obj
-    (fwoar.cl-git.commit::git-commit :commit)
+    (git-commit :commit)
     (git-tree :tree)
     (blob :blob)))
 

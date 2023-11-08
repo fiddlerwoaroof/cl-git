@@ -26,7 +26,7 @@
                   :co.fwoar.cl-git
                   "tests/sample-git-objects/hello-world-commit.git-obj")
                  (make-instance 'fake-ref :hash "the-hash"))))
-    (5am:is (typep object 'fwoar.cl-git.commit::git-commit))
+    (5am:is (typep object 'fwoar.cl-git:git-commit))
     (5am:is (equal "hello, git!
 "
                    (component :message object)))
@@ -91,7 +91,7 @@
                         (fiveam:is (equal *fake-repo* (fwoar.cl-git::ref-repo ref)))
                         (fwoar.cl-git::extract-object ref))))
 
-    (5am:is (typep object 'fwoar.cl-git.commit::git-commit))
+    (5am:is (typep object 'fwoar.cl-git:git-commit))
     (5am:is (equal "hello, git!
 "
                    (component :message object)))
