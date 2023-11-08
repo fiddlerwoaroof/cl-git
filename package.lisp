@@ -15,7 +15,7 @@
   (:use :cl :fwoar.cl-git.protocol)
   (:import-from :fwoar.cl-git.commit #:git-commit)
   (:export #:ensure-ref #:repository #:*want-delta* #:git-object
-           #:hash #:*git-encoding* #:git-commit #:ref))
+           #:hash #:*git-encoding* #:git-commit #:ref #:component))
 
 (defpackage :fwoar.cl-git.types
   (:use :cl )
