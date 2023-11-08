@@ -48,11 +48,12 @@
 (defun trace-bases (pack delta)
   (assert (typep delta 'delta))
   (let* ((offset (second (base delta)))
-         (o (extract-object-at-pos pack
-                                   offset
-                                   (make-instance 'git-ref
-                                                  :hash "00000000"
-                                                  :repo nil)))
+         (o (fwoar.cl-git.pack::extract-object-at-pos
+             pack
+             offset
+             (make-instance 'git-ref
+                            :hash "00000000"
+                            :repo nil)))
          (obj (serapeum:assocdr :object-data o))
          (raw (serapeum:assocdr :raw-data o)))
     (if (typep obj 'delta)
@@ -68,8 +69,9 @@
 
 (defun resolve-delta (ref maybe-delta)
   (typecase maybe-delta
-    (delta (multiple-value-bind (raw-data type) (trace-bases (packed-ref-pack ref)
-                                                             maybe-delta)
+    (delta (multiple-value-bind (raw-data type) (trace-bases
+                                                 (fwoar.cl-git.pack::packed-ref-pack ref)
+                                                 maybe-delta)
              (-extract-object-of-type type
                                       raw-data
                                       (ref-repo ref)

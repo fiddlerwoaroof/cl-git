@@ -24,6 +24,7 @@
   :components ((:file "package")
                (:file "types" :depends-on ("package"))
                (:file "util" :depends-on ("types" "package"))
+               (:file "pack" :depends-on ("types" "package" "util"))
 
                ;; data model
                (:file "model" :depends-on ("package"))

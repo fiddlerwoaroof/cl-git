@@ -96,5 +96,5 @@
 
 (defpackage :fwoar.cl-git.utils
   (:use :cl)
-  (:import-from :fwoar.cl-git #:partition-subseq)
-  (:export #:partition-subseq))
+  (:import-from :fwoar.cl-git #:partition-subseq #:sym->plist #:read-bytes)
+  (:export #:partition-subseq #:sym->plist #:read-bytes))

@@ -1,13 +1,5 @@
 (in-package :fwoar.cl-git)
 
-(defun seek-to-object-in-pack (pack idx-stream pack-stream obj-number)
-  (let* ((toc (idx-toc pack))
-         (offset-offset (getf toc :4-byte-offsets)))
-    (file-position idx-stream (+ offset-offset (* 4 obj-number)))
-    (let ((object-offset-in-pack (read-bytes 4 'fwoar.bin-parser:be->int idx-stream)))
-      (values (file-position pack-stream object-offset-in-pack)
-              object-offset-in-pack))))
-
 (defun extract-object-metadata-from-pack (pack obj-number)
   (with-pack-streams (s p) pack
     (seek-to-object-in-pack pack s p obj-number)
@@ -54,45 +46,10 @@
 (defun object-offset (object-number s)
   (file-position s
                  (+ (file-position s)
-                     (* (1- object-number)
-                        4)))
+                    (* (1- object-number)
+                       4)))
   (fwoar.bin-parser:extract '((offset 4 fwoar.bin-parser:be->int))
                             s))
-
-(defgeneric idx-toc (pack)
-  (:method ((pack pack))
-    (with-pack-streams (idx-stream _) pack
-      (let* ((object-count (progn (file-position idx-stream 1028)
-                                  (let ((buf (make-array 4)))
-                                    (read-sequence buf idx-stream)
-                                    (fwoar.bin-parser:be->int buf))))
-             (signature 0)
-             (version 4)
-             (fanout 8)
-             (shas (+ fanout
-                      #.(* 4 256)))
-             (packed-crcs (+ shas
-                             (* 20 object-count)))
-             (4-byte-offsets (+ packed-crcs
-                                (* 4 object-count)))
-             (8-byte-offsets-pro (+ 4-byte-offsets
-                                    (* object-count 4)))
-             (pack-sha (- (file-length idx-stream)
-                          40))
-             (8-byte-offsets (when (/= 8-byte-offsets-pro pack-sha)
-                               8-byte-offsets-pro))
-             (idx-sha (- (file-length idx-stream)
-                         20)))
-        (values (sym->plist signature
-                            version
-                            fanout
-                            shas
-                            packed-crcs
-                            4-byte-offsets
-                            8-byte-offsets
-                            pack-sha
-                            idx-sha)
-                object-count)))))
 
 (defun collect-data (idx-toc s num)
   (let ((sha-idx (getf idx-toc :shas))
