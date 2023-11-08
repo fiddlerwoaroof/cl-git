@@ -3,11 +3,6 @@
 (defparameter *object-data-lens*
   (data-lens.lenses:make-alist-lens :object-data))
 
-(defclass pack ()
-  ((%pack :initarg :pack :reader pack-file)
-   (%index :initarg :index :reader index-file)
-   (%repository :initarg :repository :reader repository)))
-
 (defclass repository ()
   ((%root :initarg :root :reader root)))
 (defclass git-repository (repository)
@@ -97,22 +92,13 @@
   (let ((obj-path (fwoar.string-utils:insert-at 2 #\/ sha)))
     (merge-pathnames obj-path ".git/objects/")))
 
-(defun pack (index pack repository)
-  (fw.lu:new 'pack index pack repository))
-
-(defmacro with-pack-streams ((idx-sym pack-sym) pack &body body)
-  (alexandria:once-only (pack)
-    `(with-open-file (,idx-sym (index-file ,pack) :element-type 'fwoar.cl-git.types:octet)
-       (with-open-file (,pack-sym (pack-file ,pack) :element-type 'fwoar.cl-git.types:octet)
-         ,@body))))
-
 (defgeneric pack-files (repo)
   (:method ((repo git-repository))
     (mapcar (serapeum:op
-              (pack _1
-                    (merge-pathnames
-                     (make-pathname :type "pack") _1)
-                    repo))
+              (fwoar.cl-git.pack:pack _1
+                                      (merge-pathnames
+                                       (make-pathname :type "pack") _1)
+                                      repo))
             (uiop:directory*
              (merge-pathnames ".git/objects/pack/*.idx"
                               (root-of repo))))))
@@ -141,9 +127,6 @@
    (%hash :initarg :hash :reader ref-hash)))
 (defclass loose-ref (git-ref)
   ((%file :initarg :file :reader loose-ref-file)))
-(defclass packed-ref (git-ref)
-  ((%pack :initarg :pack :reader packed-ref-pack)
-   (%offset :initarg :offset :reader packed-ref-offset)))
 
 (defmethod print-object ((obj git-ref) s)
   (print-unreadable-object (obj s :type t :identity t)

@@ -6,15 +6,6 @@
     ((or pathname string) (namestring
                            (truename repo)))))
 
-(defun packed-ref (repo id)
-  (multiple-value-bind (pack offset sha) (find-object-in-pack-files repo id)
-    (when pack
-      (make-instance 'packed-ref
-                     :hash sha
-                     :repo repo
-                     :offset offset
-                     :pack pack))))
-
 (defgeneric ref (repo id)
   (:documentation "Given a REPOsitory and a ref ID return the ref-id object.")
   (:method ((repo git-repository) (id string))
