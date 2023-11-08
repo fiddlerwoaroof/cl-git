@@ -70,12 +70,12 @@
 (defun resolve-delta (ref maybe-delta)
   (typecase maybe-delta
     (delta (multiple-value-bind (raw-data type) (trace-bases
-                                                 (fwoar.cl-git.pack::packed-ref-pack ref)
+                                                 (fwoar.cl-git.pack:packed-ref-pack ref)
                                                  maybe-delta)
              (-extract-object-of-type type
                                       raw-data
-                                      (fwoar.cl-git::ref-repo ref)
-                                      :hash (fwoar.cl-git::ref-hash ref))))
+                                      (fwoar.cl-git.ref:ref-repo ref)
+                                      :hash (fwoar.cl-git.ref:ref-hash ref))))
     (t maybe-delta)))
 
 (defun get-bases (pack delta)

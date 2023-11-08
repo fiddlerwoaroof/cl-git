@@ -24,14 +24,21 @@
            #:loose-ref
            #:extract-object-at-pos))
 
+(defpackage :fwoar.cl-git.ref
+  (:use :cl :fwoar.cl-git.protocol)
+  (:export #:git-ref #:loose-ref
+           #:ref-repo
+           #:ref-hash
+           #:loose-ref-file))
+
 (defpackage :fwoar.cl-git
   (:use :cl :fwoar.cl-git.protocol)
   (:import-from :fwoar.cl-git.commit #:git-commit)
   (:import-from :fwoar.cl-git.pack #:packed-ref)
+  (:import-from :fwoar.cl-git.ref #:git-ref #:loose-ref #:ref-hash #:ref-repo)
   (:export #:ensure-ref #:repository #:*want-delta* #:git-object
            #:hash #:*git-encoding* #:git-commit #:ref #:component
-           #:*git-repository* #:git-ref #:extract-object
-           #:git-tree
+           #:*git-repository* #:git-ref #:extract-object #:git-tree
            #:blob))
 
 (defpackage :fwoar.cl-git.types
