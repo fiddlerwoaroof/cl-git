@@ -7,6 +7,10 @@
   (:use :cl)
   (:export #:-extract-object-of-type #:component #:defcomponents))
 
+(defpackage :fwoar.cl-git.blob
+  (:use :cl :fwoar.cl-git.protocol)
+  (:export #:blob))
+
 (defpackage :fwoar.cl-git.commit
   (:use :cl :fwoar.cl-git.protocol)
   (:export #:git-commit #:metadata #:data))

@@ -50,10 +50,12 @@
 
 (defmethod component ((component (eql :entries)) (object git-tree))
   (entries object))
+
 (defmethod component ((component string) (object git-tree))
   (car (remove component (entries object)
                :test-not #'equal
                :key 'te-name)))
+
 (defmethod component ((component pathname) (object git-tree))
   (remove-if-not (lambda (it)
                    (pathname-match-p it component))
