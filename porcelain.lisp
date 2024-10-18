@@ -1,6 +1,5 @@
 (in-package :fwoar.cl-git)
 
-;; TODO: Update the code so this uses an object instead of a path.
 (defvar *git-repository*)
 (setf (documentation '*git-repository* 'variable)
       "The git repository path for porcelain commands to operate on.")
@@ -8,13 +7,13 @@
 (defvar *git-encoding* :utf-8
   "The encoding to use when parsing git objects")
 
+(defun co.fwoar.git:repository ()
+  *git-repository*)
+
 (defun co.fwoar.git:in-repository (root)
   (setf *git-repository*
         (ensure-repository
          (truename root))))
-
-(defun co.fwoar.git:repository ()
-  *git-repository*)
 
 (defmacro co.fwoar.git:with-repository ((root) &body body)
   `(let ((*git-repository* (ensure-repository ,root)))
