@@ -43,7 +43,7 @@
   (etypecase obj
     (fwoar.cl-git:git-commit :commit)
     (fwoar.cl-git:git-tree :tree)
-    (fwoar.cl-git:blob :blob)))
+    (fwoar.cl-git.blob:blob :blob)))
 
 (defun trace-bases (pack delta)
   (assert (typep delta 'delta))

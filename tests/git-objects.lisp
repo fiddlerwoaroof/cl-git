@@ -145,16 +145,15 @@
                         (fiveam:is (equal hash (fwoar.cl-git.ref:ref-hash ref)))
                         (fiveam:is (equal *fake-repo* (fwoar.cl-git.ref:ref-repo ref)))
                         (fwoar.cl-git:extract-object ref))))
-    (5am:is (typep object 'fwoar.cl-git::blob))
+    (5am:is (typep object 'fwoar.cl-git.blob:blob))
     (5am:is (equal "hello, world
-"
-                   (babel:octets-to-string
-                    (fwoar.cl-git::data
-                     (fwoar.cl-git:extract-object
-                      (fwoar.cl-git.pack:packed-ref
-                       :fwoar.cl-git.git-objects.pack
-                       "4b5fa63702dd96796042e92787f464e28f09f17d")))
-                    :encoding :utf-8)))))
+"                   (babel:octets-to-string
+                     (fwoar.cl-git.blob:data
+                      (fwoar.cl-git:extract-object
+                       (fwoar.cl-git.pack:packed-ref
+                        :fwoar.cl-git.git-objects.pack
+                        "4b5fa63702dd96796042e92787f464e28f09f17d")))
+                     :encoding :utf-8)))))
 
 
 (defparameter *fake-repo-2* :fwoar.cl-git.git-objects.pack-2)
@@ -290,7 +289,7 @@
              (5am:is
               (serapeum:vector=
                expectations
-               (fwoar.cl-git::data
+               (fwoar.cl-git.blob:data
                 (fwoar.cl-git:extract-object
                  (fwoar.cl-git.pack:packed-ref :fwoar.cl-git.git-objects.pack-2 ref))))))))
 

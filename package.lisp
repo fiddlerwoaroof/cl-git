@@ -9,7 +9,7 @@
 
 (defpackage :fwoar.cl-git.blob
   (:use :cl :fwoar.cl-git.protocol)
-  (:export #:blob))
+  (:export #:blob #:data))
 
 (defpackage :fwoar.cl-git.commit
   (:use :cl :fwoar.cl-git.protocol)

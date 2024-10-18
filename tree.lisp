@@ -69,3 +69,11 @@
 (defmethod component ((component (eql :ref)) (object tree-entry))
   (ref (repository object)
        (hash object)))
+(defmethod component ((component (eql :data)) (object tree-entry))
+  (component component
+             (ref (repository object)
+                  (hash object))))
+(defmethod component ((component string) (object tree-entry))
+  (component component
+             (ref (repository object)
+                  (hash object))))
