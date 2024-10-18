@@ -33,6 +33,7 @@
                (:file "repository" :depends-on ("package" "model"))
                (:file "tree" :depends-on ("package" "model" "protocol"))
                (:file "commit" :depends-on ("package" "model" "protocol"))
+               (:file "blob" :depends-on ("package" "model" "protocol"))
                (:file "delta" :depends-on ("package" "model" "protocol"))
 
                (:file "extract" :depends-on ("package" "protocol" "commit" "tree" "delta"))
