@@ -35,32 +35,33 @@
 
 ** Example usage
 
-*** Get the commit id of the master branch for a specific repository:
+*** Get the commit id of the default branch for a specific repository:
 
     #+BEGIN_SRC lisp :exports both :results verbatim
-      (co.fwoar.git:in-repository ".")
-      (co.fwoar.git:branch "master") ;; the argument to branch defaults to "master"
+      (co.fwoar.git:with-repository (".")
+        ;; the argument to branch defaults to "master" or "main"
+        (co.fwoar.git:branch))
     #+END_SRC
 
     #+RESULTS:
-    : #<FWOAR.CL-GIT::LOOSE-REF f5f888 of #<GIT-REPOSITORY {700E286593}> {700E298AA3}>
+    : #<LOOSE-REF ba6fdb of #<GIT-REPOSITORY {70161A1853}> {70161A2893}>
 
 
 *** Show the commit message
 
     #+BEGIN_SRC lisp :exports both :results verbatim
       (co.fwoar.git:in-repository ".")
-      (co.fwoar.git:component :message (co.fwoar.git:branch "master"))
+      (co.fwoar.git:component :message (co.fwoar.git:branch "main"))
     #+END_SRC
 
     #+RESULTS:
-    : feat: repository generic function turns a repository into itself
+    : feat: don't assume that the default branch is \"master\"
 
 *** Show the messages of the commit's parent
 
     #+BEGIN_SRC lisp :exports both :results verbatim
       (co.fwoar.git:in-repository ".")
-      (let* ((branch (co.fwoar.git:branch "master"))
+      (let* ((branch (co.fwoar.git:branch "main"))
              (parents (co.fwoar.git:parents branch)))
         (mapcar (lambda (it)
                   (co.fwoar.git:component :message it))
@@ -68,18 +69,16 @@
     #+END_SRC
 
     #+RESULTS:
-    : ("feat: fix graphing
+    : ("feat: handle bare repositories
     : ")
 
 *** Show the files in a commit
-    - Note taken on [2020-11-15 Sun 01:49] \\
-      If the table comes out wrong, =*print-case*= must be =:downcase=
 
     #+BEGIN_SRC lisp :exports both :results table :hlines yes :post proc(data=*this*)
       (co.fwoar.git:in-repository ".")
       (list* '("Name" "Mode" "Hash")
              'hline
-             (co.fwoar.git:git (branch "master")
+             (co.fwoar.git:git (branch "main")
                                (component :tree :entries)
                                (map (juxt (component :name)
                                           (component :mode)
@@ -89,38 +88,38 @@
     #+RESULTS:
     | Name                |   Mode | Hash                                     |
     |---------------------+--------+------------------------------------------|
-    | .github             |  40000 | 8a2d4357c2ecb8658006f638df28dea78079e438 |
+    | .github             |  40000 | beabf775f686fb2608a580b4d58dd589cf160354 |
     | .gitignore          | 100644 | 8a9fe9f77149f74fed5c05388be8e5ffd4a31678 |
     | .projectile         | 100644 | e69de29bb2d1d6434b8b29ae775ad8c2e48c5391 |
     | LICENSE             | 100644 | 0306819e780fa57dc3bf6b99a0a059670b605ae0 |
-    | README.org          | 100644 | 228549f2ddd3fff60fa45ca13c4dd1d84476ae0e |
-    | branch.lisp         | 100644 | 6ee2b1e254e7895d55ecd534b2fa16267ec14389 |
-    | co.fwoar.cl-git.asd | 100644 | b46a0006889e11b609a3712e3580056613e29adc |
-    | commit.lisp         | 100644 | 01a443c09232db495b1babfeef98e708a0d3e0b5 |
-    | delta.lisp          | 100644 | 1e6be7f65fa732646316d72a9a725c0145a84758 |
+    | README.org          | 100644 | f25aa710e8c3053f4a6618728702e41c68eb52c5 |
+    | branch.lisp         | 100644 | d82ad3bdbae4af13b5a703bf350dd2bb2c9dadd0 |
+    | co.fwoar.cl-git.asd | 100644 | 560a0f63f48161e2ba787ed42332515de7f86f14 |
+    | commit.lisp         | 100644 | 6ff88d884da171adf49ed022decd537a5964e41c |
+    | delta.lisp          | 100644 | 1014147a1946752542c1ea7dd9700cb047055047 |
     | docker-run          |  40000 | 4703dc01430d67c5d60f00ad412fddfa22f60764 |
     | docs                |  40000 | 9fe62496fc4ab6debd3c5e1b26f844b5566c36d5 |
-    | extract.lisp        | 100644 | c3acabc2c2b7ec9427ccf9a96bce582c52f985cd |
-    | git.lisp            | 100644 | b28579d23e87866f05635b666074e445ba26883f |
-    | graph.lisp          | 100644 | 513606d9eb9eb9a5a3891d7307cb071034d84b59 |
-    | model.lisp          | 100644 | f305b81a1781579c5570d5bc5209048a0e3fe9dc |
-    | package.lisp        | 100644 | c532eeeeca12e48e02999ce0ffcbd0bba8768867 |
-    | porcelain.lisp      | 100644 | 00ecaacea7ebcd57746198b248c3a3f5b89f21a5 |
-    | protocol.lisp       | 100644 | a9c317a589516da0a9d88113bb56a28b73f2d41e |
-    | repository.lisp     | 100644 | f367c22c6c7fb59fec1b514f2fe71fe78465e878 |
-    | tests               |  40000 | 5d7ec1c0804dc910ddd9b42c5e53552034aaccac |
+    | extract.lisp        | 100644 | 4fc2d479ff5c37fc52a51a2cf884e5226fb3b14d |
+    | git.lisp            | 100644 | bccecfd98285f2ab98a277a3284bd98b3dd363bf |
+    | graph.lisp          | 100644 | 25596749c5bf5ee2d5a76b355821f57010beb31a |
+    | model.lisp          | 100644 | ade5096654ea6ff352354d381784a5d9dda0a3e7 |
+    | pack.lisp           | 100644 | 16b02b061756f59d615b5f1f7f473789ad86b676 |
+    | package.lisp        | 100644 | f8bd75abedd62bd51155ebd1727b5b9476d02c57 |
+    | porcelain.lisp      | 100644 | 3f044e12ae9fc5a98a5c84f2f54e6892ae42216a |
+    | protocol.lisp       | 100644 | 84a10444b7bce2b844128917cdfc79fa4df6377b |
+    | ref.lisp            | 100644 | b508a5546a0bc0b7189a8cf8cebb33a967f3ffb2 |
+    | repository.lisp     | 100644 | 4e64262b40bcd0e239276a73426d0d1ac9d0772c |
+    | tests               |  40000 | df1addf5dae76e35e84e6ded6fee14cda501f119 |
     | tree.lisp           | 100644 | c798b0c4d0b5f552548bac98f44b5b5c19334e66 |
     | types.lisp          | 100644 | 3f53e0f33ee260a962b97ef26de1d66b32a12a15 |
     | undelta.lisp        | 100644 | ae0a070133d1a14d6e940a0f790f40b37e885b22 |
-    | util.lisp           | 100644 | 02cf7436032dd6adec92d42d3ed9b7f6307860f7 |
+    | util.lisp           | 100644 | 5374d96e5e29d836a427c40999e0f9c88fb1587a |
 
 *** Show the files that match a pattern
-    - Note taken on [2020-11-15 Sun 01:49] \\
-      If the table comes out wrong, =*print-case*= must be =:downcase=
 
     #+BEGIN_SRC lisp :exports both :results table :hlines yes :post proc(data=*this*)
       (co.fwoar.git:with-repository (".")
-        (let* ((branch (co.fwoar.git:branch "master"))
+        (let* ((branch (co.fwoar.git:branch "main"))
                (tree (co.fwoar.git:tree branch))
                (tree-entries (co.fwoar.git:filter-tree "^.....?[.]lisp" tree)))
           (flet ((component (component)
@@ -137,12 +136,13 @@
     #+RESULTS:
     | Name       |   Mode | Hash                                     |
     |------------+--------+------------------------------------------|
-    | delta.lisp | 100644 | 1e6be7f65fa732646316d72a9a725c0145a84758 |
-    | graph.lisp | 100644 | 513606d9eb9eb9a5a3891d7307cb071034d84b59 |
-    | model.lisp | 100644 | f305b81a1781579c5570d5bc5209048a0e3fe9dc |
+    | delta.lisp | 100644 | 1014147a1946752542c1ea7dd9700cb047055047 |
+    | graph.lisp | 100644 | 25596749c5bf5ee2d5a76b355821f57010beb31a |
+    | model.lisp | 100644 | ade5096654ea6ff352354d381784a5d9dda0a3e7 |
+    | pack.lisp  | 100644 | 16b02b061756f59d615b5f1f7f473789ad86b676 |
     | tree.lisp  | 100644 | c798b0c4d0b5f552548bac98f44b5b5c19334e66 |
     | types.lisp | 100644 | 3f53e0f33ee260a962b97ef26de1d66b32a12a15 |
-    | util.lisp  | 100644 | 02cf7436032dd6adec92d42d3ed9b7f6307860f7 |
+    | util.lisp  | 100644 | 5374d96e5e29d836a427c40999e0f9c88fb1587a |
 
 ** Partially Implemented:
 
