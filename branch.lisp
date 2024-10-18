@@ -1,16 +1,16 @@
 (in-package :fwoar.cl-git)
 
-(defun get-local-unpacked-branches (root)
+(defun get-local-unpacked-branches (repository)
   (mapcar (data-lens:juxt #'pathname-name
                           (alexandria:compose #'serapeum:trim-whitespace
                                               #'alexandria:read-file-into-string))
           (uiop:directory*
-           (merge-pathnames ".git/refs/heads/*"
-                            root))))
+           (merge-pathnames "refs/heads/*"
+                            (root repository)))))
 
-(defun get-local-packed-branches (root)
-  (let* ((packed-ref-file-name (merge-pathnames ".git/packed-refs"
-                                                root)))
+(defun get-local-packed-branches (repository)
+  (let* ((packed-ref-file-name (merge-pathnames "packed-refs"
+                                                (root repository))))
     (when (probe-file packed-ref-file-name)
       (with-open-file (s packed-ref-file-name)
         (loop for line = (read-line s nil)
@@ -24,17 +24,17 @@
                                                       :from-end t)))
                                 (first parts)))))))
 
-(defun get-local-branches (root)
-  (append (get-local-unpacked-branches root)
-          (get-local-packed-branches root)))
+(defun get-local-branches (repository)
+  (append (get-local-unpacked-branches repository)
+          (get-local-packed-branches repository)))
 
 (defgeneric branches (repository)
   (:method ((repository git-repository))
-    (get-local-branches (root repository))))
+    (get-local-branches repository)))
 
 (defgeneric branch (repository name)
   (:method ((repository git-repository) name)
     (second
-     (find name (get-local-branches (root repository))
+     (find name (get-local-branches repository)
            :test 'equal
            :key 'car))))

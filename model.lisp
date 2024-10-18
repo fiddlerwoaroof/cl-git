@@ -7,6 +7,8 @@
   ((%root :initarg :root :reader root)))
 (defclass git-repository (repository)
   ())
+(defclass bare-git-repository (git-repository)
+  ())
 
 (defclass git-object ()
   ((%hash :initarg :hash :accessor hash)))
@@ -69,10 +71,16 @@
 
 (defmethod resolve-repository alts :git ((root pathname))
   (alexandria:when-let ((root (probe-file root)))
-    (let* ((git-dir (merge-pathnames (make-pathname :directory '(:relative ".git"))
-                                     root)))
-      (when (probe-file git-dir)
+    (let* ((root (merge-pathnames (make-pathname :directory '(:relative ".git"))
+                                  root)))
+      (when (probe-file root)
         (fw.lu:new 'git-repository root)))))
+(defmethod resolve-repository alts :bare ((root pathname))
+  (alexandria:when-let ((root (probe-file root)))
+    (let* ((root (merge-pathnames (make-pathname :name "info")
+                                  root)))
+      (when (probe-file root)
+        (fw.lu:new 'bare-git-repository root)))))
 
 (defgeneric repository (object)
   (:documentation "get the repository for an object")
@@ -84,13 +92,9 @@
     (let ((root (parse-namestring root)))
       (repository root))))
 
-(defun get-local-branches (root)
-  (append (get-local-unpacked-branches root)
-          (get-local-packed-branches root)))
-
 (defun loose-object-path (sha)
   (let ((obj-path (fwoar.string-utils:insert-at 2 #\/ sha)))
-    (merge-pathnames obj-path ".git/objects/")))
+    (merge-pathnames obj-path "objects/")))
 
 (defgeneric pack-files (repo)
   (:method ((repo git-repository))
@@ -100,18 +104,16 @@
                                        (make-pathname :type "pack") _1)
                                       repo))
             (uiop:directory*
-             (merge-pathnames ".git/objects/pack/*.idx"
+             (merge-pathnames "objects/pack/*.idx"
                               (root-of repo))))))
 
 (defgeneric loose-object (repository id)
   (:method ((repository string) id)
-    (when (probe-file (merge-pathnames ".git" repository))
-      (loose-object (repository repository)
-                    id)))
+    (handler-case (loose-object (repository repository) id)
+      (alts-fallthrough ())))
   (:method ((repository pathname) id)
-    (when (probe-file (merge-pathnames ".git" repository))
-      (loose-object (repository repository)
-                    id)))
+    (handler-case (loose-object (repository repository) id)
+      (alts-fallthrough ())))
   (:method ((repository repository) id)
     (car
      (uiop:directory*

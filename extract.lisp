@@ -30,5 +30,5 @@
 (defgeneric extract-object (object)
   (:method ((object loose-ref))
     (extract-loose-object (ref-repo object)
-                          (loose-ref-file object)
+                          (fwoar.cl-git.ref:loose-ref-file object)
                           object)))
