@@ -132,16 +132,22 @@
                    tree-entries
                    :key #'te-name)))
 
-(defun co.fwoar.git:branch (&optional (branch :master))
+(defun co.fwoar.git:branch (&optional (branch nil branch-p))
   #+lispworks
   (declare (notinline serapeum:assocadr))
-  (let ((branches (branches *git-repository*)))
-    (ref *git-repository*
-         (serapeum:assocadr (etypecase branch
-                              (string branch)
-                              (keyword (string-downcase branch)))
-                            branches
-                            :test 'equal))))
+  (let* ((branches (branches *git-repository*))
+         (branch-hash (if branch-p
+                          (serapeum:assocadr (etypecase branch
+                                               (string branch)
+                                               (keyword (string-downcase branch)))
+                                             branches
+                                             :test 'equal)
+                          (or (serapeum:assocadr "master" branches :test 'equal)
+                              (serapeum:assocadr "main" branches :test 'equal)))))
+    (if branch-hash
+        (ref *git-repository*
+             branch-hash)
+        (error "branch ~s not found" branch))))
 
 (defun co.fwoar.git:branches ()
   (branches *git-repository*))
